@@ -1181,7 +1181,8 @@ void function RodeoPilotPullsOutWeapon( entity rodeoPilot, entity rodeoTitan, st
 
 void function TryBatteryStyleRodeo( entity rodeoPilot, entity rodeoTitan, entity titanSoul, RodeoPackageStruct rodeoPackage )
 {
-	titanSoul.EndSignal( "OnTitanDeath" )
+	titanSoul.EndSignal( "OnDestroy" )
+        rodeoTitan.EndSignal( "OnDestroy" )
 
 	string rodeoTitanType = rodeoPackage.rodeoTargetType
 	
