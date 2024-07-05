@@ -1927,14 +1927,9 @@ if ( RandomInt( 100 ) < 65 )
 GivePassive( soul, ePassives.PAS_VANGUARD_COREMETER )
 }
 
-if ( RandomInt( 100 ) < 35 )
+if ( RandomInt( 100 ) < 35 && !SoulHasPassive( soul, ePassives.PAS_VANGUARD_COREMETER ))
 {
 GivePassive( soul, ePassives.PAS_VANGUARD_DOOM )
-}
-
-if( SoulHasPassive( soul, ePassives.PAS_VANGUARD_COREMETER ) )
-{
-TakePassive( soul, ePassives.PAS_VANGUARD_DOOM )
 }
 
 if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
@@ -2782,7 +2777,7 @@ void function BossLoadout_NukeEject( entity titan )
 
 		// make them eject when receiving killshot
 		ExtraSpawner_EnableEmbarkedNPCTitanEjectOnDeath( titan, true )
-		ExtraSpawner_SetEmbarkedNPCTitanDeathEjectDamageThreshold( titan, 8000 ) // don't nuke if taking damage more than this value( only titanfall crash can do )
+		//ExtraSpawner_SetEmbarkedNPCTitanDeathEjectDamageThreshold( titan, 8000 ) // don't nuke if taking damage more than this value( only titanfall crash can do )
 		ExtraSpawner_AllowTitanDeathEjectRedirectKillCredit( titan, true ) // reward kill credit to death eject triggering attacker, not doomed attacker
 		// don't allow pilot to be in field, ragdoll them immediately
 		TitanEject_SetSoulDisableNPCPilotCombat( soul, true )
@@ -2801,16 +2796,10 @@ GivePassive( soul, ePassives.PAS_BUILD_UP_NUCLEAR_CORE )
 
 void function RandomOverCore( entity titan )
 {
-if ( RandomInt( 100 ) < 35 )
-{
 entity soul = titan.GetTitanSoul()
+if ( RandomInt( 100 ) < 35 && !SoulHasPassive( soul, ePassives.PAS_BUILD_UP_NUCLEAR_CORE ))
+{
 GivePassive( soul, ePassives.PAS_HYPER_CORE )
-}
-
-entity soul = titan.GetTitanSoul()
-if( SoulHasPassive( soul, ePassives.PAS_BUILD_UP_NUCLEAR_CORE ) )
-{
-TakePassive( soul, ePassives.PAS_HYPER_CORE )
 }
 }
 
@@ -2824,14 +2813,17 @@ withpilotBossLoadout_NukeEject( titan ) // funny
 GivePassive( soul, ePassives.PAS_BUILD_UP_NUCLEAR_CORE )
 }
 
-if ( RandomInt( 100 ) < 35 )
+if ( RandomInt( 100 ) < 35 && !SoulHasPassive( soul, ePassives.PAS_BUILD_UP_NUCLEAR_CORE ))
 {
 GivePassive( soul, ePassives.PAS_HYPER_CORE )
 }
-
-if( SoulHasPassive( soul, ePassives.PAS_BUILD_UP_NUCLEAR_CORE ) )
+if ( RandomInt( 100 ) < 20 && !SoulHasPassive( soul, ePassives.PAS_BUILD_UP_NUCLEAR_CORE ) && !SoulHasPassive( soul, ePassives.PAS_HYPER_CORE ))
 {
-TakePassive( soul, ePassives.PAS_HYPER_CORE )
+ExtraSpawner_SetEmbarkedNPCTitanDeathEjectDamageThreshold( titan, 2500000 )
+TitanHealth_SetSoulNPCPilotEjectDelay( soul, 0 )
+ExtraSpawner_EnableEmbarkedNPCTitanEjectOnDeath( titan, true )
+ExtraSpawner_AllowTitanDeathEjectRedirectKillCredit( titan, true )
+TitanEject_SetSoulDisableNPCPilotCombat( soul, false )
 }
 }
 
@@ -2846,14 +2838,9 @@ TakePassive( soul, ePassives.PAS_AUTO_EJECT )
 GivePassive( soul, ePassives.PAS_BUILD_UP_NUCLEAR_CORE )
 }
 
-if ( RandomInt( 100 ) < 35 )
+if ( RandomInt( 100 ) < 35 && !SoulHasPassive( soul, ePassives.PAS_BUILD_UP_NUCLEAR_CORE ))
 {
 GivePassive( soul, ePassives.PAS_HYPER_CORE )
-}
-
-if( SoulHasPassive( soul, ePassives.PAS_BUILD_UP_NUCLEAR_CORE ) )
-{
-TakePassive( soul, ePassives.PAS_HYPER_CORE )
 }
 }
 
@@ -2892,7 +2879,7 @@ void function withpilotBossLoadout_NukeEject( entity titan )
 
 		// make them eject when receiving killshot
 		ExtraSpawner_EnableEmbarkedNPCTitanEjectOnDeath( titan, true )
-		ExtraSpawner_SetEmbarkedNPCTitanDeathEjectDamageThreshold( titan, 8000 ) // don't nuke if taking damage more than this value( only titanfall crash can do )
+		//ExtraSpawner_SetEmbarkedNPCTitanDeathEjectDamageThreshold( titan, 8000 ) // don't nuke if taking damage more than this value( only titanfall crash can do )
 		ExtraSpawner_AllowTitanDeathEjectRedirectKillCredit( titan, true ) // reward kill credit to death eject triggering attacker, not doomed attacker
 		// don't allow pilot to be in field, ragdoll them immediately
 		TitanEject_SetSoulDisableNPCPilotCombat( soul, false )
