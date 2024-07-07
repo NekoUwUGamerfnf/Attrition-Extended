@@ -191,12 +191,12 @@ void function MeleeSyncedTitan_InitSpecificExecutionRefSettings()
 	MeleeSyncedTitan_RegisterTitanCharacterSpecificExecutionRef( "tone", "execution_tone_prime" )
 
 	// monarch character
-	MeleeSyncedTitan_RegisterTitanCharacterSpecificExecutionRef( "vanguard", "executvanguard_vanguard" )
-	MeleeSyncedTitan_RegisterTitanCharacterSpecificExecutionRef( "vanguard", "executvanguard_vanguard_kit" )
+	MeleeSyncedTitan_RegisterTitanCharacterSpecificExecutionRef( "vanguard", "execution_vanguard" )
+	MeleeSyncedTitan_RegisterTitanCharacterSpecificExecutionRef( "vanguard", "execution_vanguard_kit" )
 
 	// ronin character
-	MeleeSyncedTitan_RegisterTitanCharacterSpecificExecutionRef( "ronin", "executronin_ronin" )
-	MeleeSyncedTitan_RegisterTitanCharacterSpecificExecutionRef( "ronin", "executronin_ronin_prime" )
+	MeleeSyncedTitan_RegisterTitanCharacterSpecificExecutionRef( "ronin", "execution_ronin" )
+	MeleeSyncedTitan_RegisterTitanCharacterSpecificExecutionRef( "ronin", "execution_ronin_prime" )
 
 	// northstar character
 	MeleeSyncedTitan_RegisterTitanCharacterSpecificExecutionRef( "northstar", "execution_northstar" )
@@ -290,8 +290,9 @@ void function MeleeSyncedTitan_InitDefaultRefCallbacks()
 	// SCORCH
 	// don't have any execution that requires weapon
 	
-	// BT
+	// BT 
 	MeleeSyncedTitan_AddExecutionRefLoadoutReplaceCallback( "execution_bt_kickshoot", Execution_BT_KickShoot )
+        // isn't needed kickshoot can work with out replacement
 
 	
 	// modded titans
@@ -356,7 +357,7 @@ void function Execution_Ion_Prime( entity attacker )
 
 	MeleeSyncedTitan_ReplaceExecutionAttackerLoadout( 
 		attacker, 
-		"", [],		// "mp_titanweapon_particle_accelerator", won't use during execution
+		"mp_titanweapon_flightcore_rockets", [], // won't use during execution but change because it looks better
 		"", [],		// "mp_titanweapon_vortex_shield_ion", won't use during execution
 		"", [],		// "mp_titanability_laser_trip", won't use during execution
 		"mp_titanweapon_laser_lite", [],
@@ -368,21 +369,19 @@ void function Execution_Ion_Prime( entity attacker )
 const array<string> EXECUTION_ION_PRIME_REQUIRED_WEAPONS =
 [
 	"mp_titanweapon_laser_lite", 
-	"mp_titancore_laser_cannon", 
+	"mp_titancore_laser_cannon",
+        "mp_titanweapon_flightcore_rockets", 
 ]
+// flightcore rockets removes the titan weapon on the back moveing which looks weird
 bool function ExecutionIonPrime_ShouldReplaceLoadout( entity titan )
 {
 	// npc specific checks: we always replace loadout if they have "mp_titancore_laser_cannon"
 	// it will make npcs stuck forever when performing this execution
-	if ( titan.IsNPC() )
-	{
-		if ( PlayerHasWeapon( titan, "mp_titancore_laser_cannon" ) )
-			return true // always do loadout replace if so. we'll change laser core to smart core in loadout replace function
-		else
-			return !PlayerHasWeapon( titan, "mp_titanweapon_laser_lite" ) // npc only needs laser_lite
-	}
-	
 	// player checks
+        if ( titan.IsNPC() )
+        {
+        return true
+        }
 	return Generic_TitanExecutionShouldReplaceLoadout( titan, EXECUTION_ION_REQUIRED_WEAPONS )
 }
 
