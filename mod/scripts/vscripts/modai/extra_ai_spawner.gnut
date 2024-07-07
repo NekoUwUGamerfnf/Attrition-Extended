@@ -1807,7 +1807,7 @@ if ( RandomInt( 2 ) < 1 )
 {
 titan.SetModel( $"models/titans/light/titan_light_northstar_prime.mdl" )
 entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_northstar_prime"
+soul.soul.titanLoadout.titanExecution = "execution_random_2"
 }
 
 if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
@@ -1825,7 +1825,7 @@ if ( RandomInt( 2 ) < 1 )
 {
 titan.SetModel( $"models/titans/light/titan_light_ronin_prime.mdl" )
 entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_ronin_prime"
+soul.soul.titanLoadout.titanExecution = "execution_random_3"
 }
 
 if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
@@ -1843,7 +1843,7 @@ RandomTitan( titan )
 if ( RandomInt( 2 ) < 1 )
 {
 titan.SetModel( $"models/titans/medium/titan_medium_ion_prime.mdl" )
-soul.soul.titanLoadout.titanExecution = "execution_ion_prime"
+soul.soul.titanLoadout.titanExecution = "execution_random_0"
 }
 
 if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
@@ -1861,7 +1861,7 @@ if ( RandomInt( 2 ) < 1 )
 {
 titan.SetModel( $"models/titans/heavy/titan_heavy_scorch_prime.mdl" )
 entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_scorch_prime"
+soul.soul.titanLoadout.titanExecution = "execution_random_1"
 }
 
 if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
@@ -1878,7 +1878,7 @@ if ( RandomInt( 2 ) < 1 )
 {
 titan.SetModel( $"models/titans/medium/titan_medium_tone_prime.mdl" )
 entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_tone_prime"
+soul.soul.titanLoadout.titanExecution = "execution_random_4"
 }
 
 if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
@@ -1895,7 +1895,7 @@ if ( RandomInt( 2 ) < 1 )
 {
 titan.SetModel( $"models/titans/heavy/titan_heavy_legion_prime.mdl" )
 entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_legion_prime"
+soul.soul.titanLoadout.titanExecution = "execution_random_5"
 }
 
 if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
@@ -1946,7 +1946,7 @@ if ( RandomInt( 2 ) < 1 )
 {
 titan.SetModel( $"models/titans/light/titan_light_northstar_prime.mdl" )
 entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_northstar_prime"
+soul.soul.titanLoadout.titanExecution = "execution_random_2"
 NPCPrimeTitanCamoSetup( titan )
 }
 	TakeAllWeapons( titan )
@@ -1993,7 +1993,7 @@ if ( RandomInt( 2 ) < 1 )
 {
 titan.SetModel( $"models/titans/medium/titan_medium_ion_prime.mdl" )
 entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_ion_prime"
+soul.soul.titanLoadout.titanExecution = "execution_random_0"
 NPCPrimeTitanCamoSetup( titan )
 }
 
@@ -2776,7 +2776,7 @@ void function BossLoadout_NukeEject( entity titan )
 		)
 
 		// make them eject when receiving killshot
-		ExtraSpawner_EnableEmbarkedNPCTitanEjectOnDeath( titan, true )
+		//ExtraSpawner_EnableEmbarkedNPCTitanEjectOnDeath( titan, true )
 		//ExtraSpawner_SetEmbarkedNPCTitanDeathEjectDamageThreshold( titan, 8000 ) // don't nuke if taking damage more than this value( only titanfall crash can do )
 		ExtraSpawner_AllowTitanDeathEjectRedirectKillCredit( titan, true ) // reward kill credit to death eject triggering attacker, not doomed attacker
 		// don't allow pilot to be in field, ragdoll them immediately
@@ -2878,7 +2878,7 @@ void function withpilotBossLoadout_NukeEject( entity titan )
 		)
 
 		// make them eject when receiving killshot
-		ExtraSpawner_EnableEmbarkedNPCTitanEjectOnDeath( titan, true )
+		//ExtraSpawner_EnableEmbarkedNPCTitanEjectOnDeath( titan, true )
 		//ExtraSpawner_SetEmbarkedNPCTitanDeathEjectDamageThreshold( titan, 8000 ) // don't nuke if taking damage more than this value( only titanfall crash can do )
 		ExtraSpawner_AllowTitanDeathEjectRedirectKillCredit( titan, true ) // reward kill credit to death eject triggering attacker, not doomed attacker
 		// don't allow pilot to be in field, ragdoll them immediately
@@ -2966,7 +2966,7 @@ if ( RandomInt( 2 ) < 1 )
 {
 titan.SetModel( $"models/titans/medium/titan_medium_ion_prime.mdl" )
 entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_ion_prime"
+soul.soul.titanLoadout.titanExecution = "execution_random_0"
 }
 	// generic loadout function for boss titan
 	altBossLoadout_Generic( titan )
@@ -3002,7 +3002,7 @@ if ( RandomInt( 2 ) < 1 )
 {
 titan.SetModel( $"models/titans/medium/titan_medium_tone_prime.mdl" )
 entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_tone_prime"
+soul.soul.titanLoadout.titanExecution = "execution_random_4"
 }
 	// generic loadout function for boss titan
 	BossLoadout_Generic( titan )
@@ -3037,7 +3037,7 @@ if ( RandomInt( 2 ) < 1 )
 {
 titan.SetModel( $"models/titans/heavy/titan_heavy_legion_prime.mdl" )
 entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_legion_prime"
+soul.soul.titanLoadout.titanExecution = "execution_random_5"
 }
 	// generic loadout function for boss titan
 	altBossLoadout_Generic( titan )
@@ -3072,7 +3072,7 @@ if ( RandomInt( 2 ) < 1 )
 {
 titan.SetModel( $"models/titans/heavy/titan_heavy_scorch_prime.mdl" )
 entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_scorch_prime"
+soul.soul.titanLoadout.titanExecution = "execution_random_1"
 }
 	// generic loadout function for boss titan
 	altBossLoadout_Generic( titan )
@@ -3128,7 +3128,7 @@ if ( RandomInt( 2 ) < 1 )
 {
 titan.SetModel( $"models/titans/light/titan_light_ronin_prime.mdl" )
 entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_ronin_prime"
+soul.soul.titanLoadout.titanExecution = "execution_random_3"
 }
 	// generic loadout function for boss titan
 	altBossLoadout_Generic( titan )
@@ -3167,7 +3167,7 @@ if ( RandomInt( 2 ) < 1 )
 {
 titan.SetModel( $"models/titans/light/titan_light_northstar_prime.mdl" )
 entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_northstar_prime"
+soul.soul.titanLoadout.titanExecution = "execution_random_2"
 }
 	// generic loadout function for boss titan
 	altBossLoadout_Generic( titan )
@@ -3290,7 +3290,7 @@ if ( RandomInt( 2 ) < 1 )
 {
 titan.SetModel( $"models/titans/medium/titan_medium_tone_prime.mdl" )
 entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_tone_prime"
+soul.soul.titanLoadout.titanExecution = "execution_random_4"
 }
     TakeAllWeapons( titan )
      altBossLoadout_Generic( titan )
@@ -3347,7 +3347,7 @@ if ( RandomInt( 2 ) < 1 )
 {
 titan.SetModel( $"models/titans/medium/titan_medium_tone_prime.mdl" )
 entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_tone_prime"
+soul.soul.titanLoadout.titanExecution = "execution_random_4"
 }
 BossLoadout_Generic( titan )
 TakeAllWeapons( titan )
@@ -3368,7 +3368,7 @@ if ( RandomInt( 2 ) < 1 )
 {
 titan.SetModel( $"models/titans/medium/titan_medium_ion_prime.mdl" )
 entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_ion_prime"
+soul.soul.titanLoadout.titanExecution = "execution_random_0"
 }
 altBossLoadout_Generic( titan )
 
@@ -3401,7 +3401,7 @@ if ( RandomInt( 2 ) < 1 )
 {
 titan.SetModel( $"models/titans/light/titan_light_northstar_prime.mdl" )
 entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_northstar_prime"
+soul.soul.titanLoadout.titanExecution = "execution_random_2"
 }    
      altBossLoadout_Generic( titan )
 
@@ -3525,7 +3525,7 @@ if ( RandomInt( 2 ) < 1 )
 {
 titan.SetModel( $"models/titans/medium/titan_medium_tone_prime.mdl" )
 entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_tone_prime"
+soul.soul.titanLoadout.titanExecution = "execution_random_4"
 }
 	//BossLoadout_ExecutionGivesBattery( titan )
 	//BossLoadout_Generic_NoModelForMP( titan ) // make them never eject, with basic setups for a boss titan
