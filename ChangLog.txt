@@ -1,3 +1,11 @@
+1.2.6 fixed execution crash for first person
+
+1.2.4 and 1.2.5 fixed bugs like death eject for nuke eject not doing it and fixing crashes and having auto titans useing ion prime execution work
+
+
+1.2.3 fixed titan rodeo from one of my messages in northstar server and auto eject for titans that can eject with a pilot and removed nuke eject always ejecting in doom state unless a execution is done or health and stuff
+
+
 1.2.1 fixes
 
 
