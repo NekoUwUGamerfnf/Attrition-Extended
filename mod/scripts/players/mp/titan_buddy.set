@@ -7,7 +7,7 @@
 	// modified: add a hatch model for it's rodeoing
 	hatchmodel 			"models/titans/medium/titan_medium_rodeo_battery.mdl"
 
-	titanCharacterName "vanguard" //Making it return bt for the cockpit sound alias. If this needs to be something else (like "Buddy Titan" ) we should re-examine
+	titanCharacterName "bt" //Making it return bt for the cockpit sound alias. If this needs to be something else (like "Buddy Titan" ) we should re-examine
 	hasLeftRightEmbarks		1
 
 	keep_title_on_autotitan			0 // vanilla enables this, but I'd like to disable it because MP shows friendly titan title
