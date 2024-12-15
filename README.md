@@ -1,5 +1,4 @@
-# a better version of aitdm_extended_overhaul
-fixed some stuff
+# Version of attrition extended that still is on github
 
-titan create [discord server](https://discord.gg/9wcEdgRyrs)
+I'm not gonna do fixes to the mod but people can make pull requests to update the mod. I will still do the add titan thing
 
