@@ -2,3 +2,5 @@
 
 I'm not gonna do fixes to the mod but people can make pull requests to update the mod. I will still do the add titan thing
 
+[discord server](https://discord.gg/9wcEdgRyrs)
+
