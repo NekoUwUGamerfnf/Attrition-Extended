@@ -1,11 +1,15 @@
 # Attrition Extended
 
+Put `aitdm_extended_spawns` In Playlistvars To Enable Extended NPC Spawns
+
 Other Attrition Extended Versions
 
 Attrition Extended Overhaul
+
 https://thunderstore.io/c/northstar/p/SoftSleeper/Attrition_Extended_Overhaul/
 
 Attrition Extended Original
+
 https://thunderstore.io/c/northstar/p/VoyageDB_Modding_Home/Attrition_Extended/
 
 Use This To Make Sure The Server Doesn't Crash As Much :)
