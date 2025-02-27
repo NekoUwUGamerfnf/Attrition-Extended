@@ -5,67 +5,73 @@
 	"LoadPriority": 10, // Add TitanFrameWork compatibility, add higher load priority to overwrite
 
 	"Dependencies": {
+		// Add TitanFrameWork compatibility
+		// https://northstar.thunderstore.io/package/The_Peepeepoopoo_man/Titanframework/
+		"EXTRA_SPAWNER_HAS_TITAN_FRAMEWORK": "Peepee.TitanFramework",
+		// Modded titan spawn support
+		"EXTRA_SPAWNER_HAS_BRUTE4": "Dinorush.Brute4",
+		"EXTRA_SPAWNER_HAS_ARCHON": "Moblin.Archon",
 		// Add HoloShift compatibility
 		// https://northstar.thunderstore.io/package/Legonzaur/HoloShift/
 		"EXTRA_SPAWNER_HAS_HOLOSHIFT": "Legonzaur.HoloShift"
 	},
 
-    "Scripts": [
+	"Scripts": [
 		// nessie utility
 		{
 			"Path": "/nessieutil/enum_utility.gnut",
 			"RunOn": "SERVER",
 			"ServerCallback": {
-                "After": "Nessie_Enum_Utility_Init"
-            }
+				"After": "Nessie_Enum_Utility_Init"
+			}
 		},
 		{
 			"Path": "/nessieutil/levels_util.gnut",
 			"RunOn": "SERVER",
 			"ServerCallback": {
-                "After": "Nessie_Levels_Utility_Init"
-            }
+				"After": "Nessie_Levels_Utility_Init"
+			}
 		},
 		{
 			"Path": "/nessieutil/damage_calc_util.gnut",
 			"RunOn": "SERVER",
 			"ServerCallback": {
-                "After": "Nessie_Damage_Calculation_Utility_Init"
-            }
+				"After": "Nessie_Damage_Calculation_Utility_Init"
+			}
 		},
 		{
 			"Path": "/nessieutil/highlight_functions.gnut",
 			"RunOn": "SERVER",
 			"ServerCallback": {
-                "After": "Nessie_ExtraHighlightFunctions_Init"
-            }
+				"After": "Nessie_ExtraHighlightFunctions_Init"
+			}
 		},
 		// server-side objects
 		{
 			"Path": "/objects_server/server_model_fx.gnut",
 			"RunOn": "SERVER",
 			"ServerCallback": {
-                "After": "ServerSide_ModelFX_Init"
-            }
+				"After": "ServerSide_ModelFX_Init"
+			}
 		},
 		{
 			"Path": "/objects_server/gunship_server_fx.gnut",
 			"RunOn": "SERVER",
 			"ServerCallback": {
-                "After": "Gunship_ServerSide_ModelFX_Init"
-            }
+				"After": "Gunship_ServerSide_ModelFX_Init"
+			}
 		},
 		{
 			"Path": "/objects_server/titan_buddy_server_fx.gnut",
 			"RunOn": "SERVER",
 			"ServerCallback": {
-                "After": "BuddyTitan_ServerSide_ModelFX_Init"
-            }
+				"After": "BuddyTitan_ServerSide_ModelFX_Init"
+			}
 		},
 		// server-side objects end
 		// npc spawn scripts
-        {
-            "Path": "/modai/extra_ai_spawner.gnut",
+		{
+			"Path": "/modai/extra_ai_spawner.gnut",
 			"RunOn": "SERVER && MP",
 			"ServerCallback": {
 				"After": "ExtraAISpawner_Init"
@@ -75,27 +81,27 @@
 			"Path": "/modai/_ai_sentry_turret_placement.gnut",
 			"RunOn": "SERVER",
 			"ServerCallback": {
-                "After": "AiSentryTurretPlacement_Init"
-            }
+				"After": "AiSentryTurretPlacement_Init"
+			}
 		},
 		// npc spawn scripts end
 		// mp boss npc scripts
 		{
-            "Path": "/modai/_boss_titan_mp.gnut",
+			"Path": "/modai/_boss_titan_mp.gnut",
 			"RunOn": "SERVER && MP",
 			"ServerCallback": {
 				"After": "Multiplayer_BossTitan_Init"
 			}
 		},
 		{
-            "Path": "/modai/_boss_titan_intro.gnut",
+			"Path": "/modai/_boss_titan_intro.gnut",
 			"RunOn": "SERVER && MP",
 			"ServerCallback": {
 				"After": "MP_Boss_Titans_Intro_Init"
 			}
 		},
 		{
-            "Path": "/modai/_boss_titan_conversation.gnut",
+			"Path": "/modai/_boss_titan_conversation.gnut",
 			"RunOn": "SERVER && MP",
 			"ServerCallback": {
 				"After": "MP_BossTitan_Conversation_Init"
@@ -104,11 +110,11 @@
 		// mp boss npc scripts end
 		// gamemode scripts
 		{
-            "Path": "/modgamemodes/gamemode_aitdm_extend.gnut",
+			"Path": "/modgamemodes/gamemode_aitdm_extend.gnut",
 			"RunOn": "SERVER && MP"
 		},
 		{
-            "Path": "/sharedutil/riff_aitdm_extend.gnut",
+			"Path": "/sharedutil/riff_aitdm_extend.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
 			"ClientCallback": {
 				"After": "Riff_AITdm_Extend_Init"
@@ -120,27 +126,27 @@
 		{
 			"Path": "/sharedutil/riff_modded_aitdm_shared.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
-            "ServerCallback": {
-                "After": "Riff_Modded_Attrition_Shared_Init"
-            },
+			"ServerCallback": {
+				"After": "Riff_Modded_Attrition_Shared_Init"
+			},
 			"ClientCallback": {
-                "After": "Riff_Modded_Attrition_Shared_Init"
-            }
+				"After": "Riff_Modded_Attrition_Shared_Init"
+			}
 		},
 		{
 			"Path": "/sharedutil/riff_modded_titan_anim.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
-            "ServerCallback": {
-                "After": "Riff_Modded_Titan_Animation_Init"
-            },
+			"ServerCallback": {
+				"After": "Riff_Modded_Titan_Animation_Init"
+			},
 			"ClientCallback": {
-                "After": "Riff_Modded_Titan_Animation_Init"
-            }
+				"After": "Riff_Modded_Titan_Animation_Init"
+			}
 		},
 		// gamemode scripts end
 		// modified utility scripts
 		{
-            "Path": "/modmelee/_melee_synced_npc.gnut",
+			"Path": "/modmelee/_melee_synced_npc.gnut",
 			"RunOn": "SERVER && MP",
 			"ServerCallback": {
 				"After": "MeleeSyncedNPC_Init"
@@ -149,16 +155,16 @@
 		{
 			"Path": "/modmelee/_modded_melee_synced_human.gnut",
 			"RunOn": "SERVER",
-            "ServerCallback": {
-                "After": "Modded_Melee_Synced_Human_Init"
-            }	
+			"ServerCallback": {
+				"After": "Modded_Melee_Synced_Human_Init"
+			}
 		},
 		{
 			"Path": "/titanutil/_titan_loadout_switch.nut",
 			"RunOn": "SERVER && MP",
 			"ServerCallback": {
-                "After": "TitanLoadoutSwitch_Init"
-            }
+				"After": "TitanLoadoutSwitch_Init"
+			}
 		},
 		// modified utility scripts end
 		// vanilla missing weapon scripts
@@ -166,24 +172,24 @@
 			"Path": "/modweapons/vanilla_miss/mp_weapon_gunship_turret_fixed.nut",
 			"RunOn": "CLIENT || SERVER",
 			"ClientCallback": {
-                "After": "MpWeaponGunshipTurret_Init"
-            },
-            "ServerCallback": {
-                "After": "MpWeaponGunshipTurret_Init"
-            }
+				"After": "MpWeaponGunshipTurret_Init"
+			},
+			"ServerCallback": {
+				"After": "MpWeaponGunshipTurret_Init"
+			}
 		},
 		{
 			"Path": "/modweapons/vanilla_miss/mp_weapon_gunship_missile_fixed.nut",
 			"RunOn": "CLIENT || SERVER",
 			"ClientCallback": {
-                "After": "MpWeaponGunshipMissile_Init"
-            },
-            "ServerCallback": {
-                "After": "MpWeaponGunshipMissile_Init"
-            }
+				"After": "MpWeaponGunshipMissile_Init"
+			},
+			"ServerCallback": {
+				"After": "MpWeaponGunshipMissile_Init"
+			}
 		}
 		// vanilla missing weapon scripts end
-    ],
+	],
 
 	"Localisation": [
 		"resource/extra_spawner_localization_%language%.txt"
