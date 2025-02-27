@@ -12461,6 +12461,8 @@ void function ExtraSpawner_SpawnReaperCanLaunchTicks( vector pos, vector rot, in
 
 void function ExtraSpawner_SetUpNukeDeathReaper( entity reaper )
 {
+if ( RandomInt( 100 ) < 10 ) // Random Chance Because Reapers Nuke Every Time Is Annoying
+{
 	// use modified functions in _ai_superspectre.gnut, extremely powerful reaper: they do nuke on death
 	SuperSpectre_AddNukeDeath( reaper ) // force this reaper to nuke on death without having to change aisettings
 	SuperSpectre_SetDoNukeBeforeDeath( reaper, true ) // do nuke before actual death, so their highlight and title stuffs won't be removed
@@ -12495,6 +12497,7 @@ void function ExtraSpawner_SetUpNukeDeathReaper( entity reaper )
 
 	// visual misc
 	SuperSpectre_SetDoBodyGroupUpdateOnDamage( reaper, true ) // vanilla removed feature turns to settings: update bodygroup to doomed state( like MP titans ) if taking enough damage
+}
 }
 
 void function ExtraSpawner_ReaperTickLaunchThink( entity reaper, string tickType )
