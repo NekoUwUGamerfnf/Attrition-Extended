@@ -1,6 +1,6 @@
 # Attrition Extended
 
-Put `aitdm_extended_spawns` In Playlistvars To Enable Extended NPC Spawns
+Put `aitdm_extended_spawns 1` In Playlistvars To Enable Extended NPC Spawns
 
 Other Attrition Extended Versions
 
@@ -18,6 +18,7 @@ Use This To Make Sure The Server Doesn't Crash As Much :)
 - `sv_max_prop_data_dwords_multiplayer 800000` 
 
 Playlistvars 
+
 `aitdm_extended_spawns` 0-1
 
 `aitdm_extended_coop` 0-1
