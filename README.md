@@ -1,5 +1,7 @@
 # Attrition Extended
 
+[Discord Server](https://discord.gg/9wcEdgRyrs)
+
 Put `aitdm_extended_spawns 1` In Playlistvars To Enable Extended NPC Spawns
 
 Other Attrition Extended Versions
@@ -8,7 +10,7 @@ Attrition Extended Overhaul
 
 https://thunderstore.io/c/northstar/p/SoftSleeper/Attrition_Extended_Overhaul/
 
-Attrition Extended Original
+Attrition Extended
 
 https://thunderstore.io/c/northstar/p/VoyageDB_Modding_Home/Attrition_Extended/
 
@@ -58,7 +60,3 @@ Playlistvars
 `modaitdm_titan_spawn_score` int
 
 `modaitdm_boss_replace_chance` int
-
-
-[Discord Server](https://discord.gg/9wcEdgRyrs)
-
