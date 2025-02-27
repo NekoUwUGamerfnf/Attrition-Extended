@@ -2760,7 +2760,8 @@ GivePassive( soul, ePassives.PAS_HYPER_CORE )
 }
 if ( RandomInt( 100 ) < 20 && !SoulHasPassive( soul, ePassives.PAS_BUILD_UP_NUCLEAR_CORE ) && !SoulHasPassive( soul, ePassives.PAS_HYPER_CORE ))
 {
-ExtraSpawner_SetEmbarkedNPCTitanDeathEjectDamageThreshold( titan, 2500 )
+GivePassive( soul, ePassives.PAS_ENHANCED_TITAN_AI )
+ExtraSpawner_SetEmbarkedNPCTitanDeathEjectDamageThreshold( titan, 250000 )
 TitanHealth_SetSoulNPCPilotEjectDelay( soul, 0 )
 ExtraSpawner_EnableEmbarkedNPCTitanEjectOnDeath( titan, true )
 ExtraSpawner_AllowTitanDeathEjectRedirectKillCredit( titan, true )
@@ -10903,6 +10904,10 @@ void function EmbarkedNPCTitanEjectThink_Threaded( entity titan )
 				hasSetUpDeathEject = false
 			}
 		}
+
+				if ( SoulHasPassive( soul, ePassives.PAS_ENHANCED_TITAN_AI ) )
+				if ( doomedStartTime != -1 )
+				thread TitanEjectPlayer( titan )
 
 		if ( doomedStartTime != -1 )
 		{

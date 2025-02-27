@@ -47,13 +47,6 @@ void function FirstPersonSequenceForce1P_RegisterCustomNetworkFunctions()
 Forced1PSequenceData function FirstPersonSequenceForce1P( FirstPersonSequenceStruct sequence, entity player, entity other = null )
 {
 Forced1PSequenceData cleanupData
-/*
-Here For Development Purposes And To See What Model The Player Was Using If The Server Crashes Because Of The Model
-*/
-if ( player.IsPlayer() ) // NPC's Can't Use GetPlayerName() Function
-printt("[FirstPersonExecution] " + player.GetPlayerName() + "'s Model " + ( player.GetModelName() ))
-if ( player.IsNPC() ) // Here Because NPC's Can't Use GetPlayerName() Function
-printt("[FirstPersonExecution] NPC's Model " + ( player.GetModelName() ))
 if( player.IsPlayer() )
 	{
 	string attachment = FORCE1P_PILOT_1P_ATTACHMENT
