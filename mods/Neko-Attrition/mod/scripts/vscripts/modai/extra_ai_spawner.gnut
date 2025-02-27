@@ -375,15 +375,6 @@ struct NPCVanguardPilot
 	asset pilotModel
 }
 
-struct TonePilot
-{
-	string pilotName // for indentifying
-	
-	string titanTitle
-	string pilotTitle // can't use localized string!
-	asset pilotModel
-}
-
 // for GruntEmbarkedTitanLoadout() overwrite settings
 // grunt titan loadout needs to base on an existing spawn name
 struct GruntTitanLoadout
@@ -418,8 +409,6 @@ struct
 	// for BossLoadout_Vanguard() picking random loadouts
 	array<NPCVanguardLoadout> npcVanguardLoadouts
 	array<NPCVanguardPilot> npcVanguardPilots
-        array<CommunityLoadout> communityloadouts
-        array<TonePilot> tonepilots
 	table<entity, string> soulVanguardPilotName
 	// for GruntEmbarkedTitanLoadout() overwrite settings
 	// grunt titan loadout needs to base on an existing spawn name
@@ -1746,14 +1735,6 @@ void function NPCOgreTitanCoreReplace( entity titan )
 	titan.GiveOffhandWeapon( "mp_titancore_flame_wave", OFFHAND_EQUIPMENT )
 }
 
-void function RandomPilotCamo( entity pilot ) // picks a random camo then sets it on the pilot to make it look like a player
-{
-    // get random camo for pilot
-	int randompilotcamo = RandomIntRange( 0, 159 ) // 159 is all camos
-	pilot.SetSkin( 1 ) // pilot color has skinIndex set to 1
-	pilot.SetCamo( randompilotcamo ) // set camo 
-}
-
 void function RandomTitanCamo( entity titan ) // picks a random camo then sets it on the titan to make it look like a player titan
 {
     // get random camo for auto titan
@@ -2952,12 +2933,6 @@ void function FullNPCKitsIonLoadout( entity titan )
 
 void function BossLoadout_Tone( entity titan )
 {
-if ( RandomInt( 2 ) < 1 )
-{
-titan.SetModel( $"models/titans/medium/titan_medium_tone_prime.mdl" )
-entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_random_4"
-}
 	// generic loadout function for boss titan
 	BossLoadout_Generic( titan )
 
