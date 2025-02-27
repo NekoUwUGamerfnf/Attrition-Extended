@@ -1522,10 +1522,11 @@ void function InitDefaultNPCWeapons()
 		"mp_weapon_rspn101_og", 
 		"mp_weapon_r97", 
 		"mp_weapon_car",
-		//"mp_weapon_alternator_smg", // pistol animation, works bad on pilots
 		"mp_weapon_vinson",
-		//"mp_weapon_epg",
-		//"mp_weapon_smr",
+		"mp_weapon_epg",
+		"mp_weapon_smr",
+		"mp_weapon_softball",
+		//"mp_weapon_alternator_smg", // pistol animation, works bad on pilots
 		//"mp_weapon_defender",
 		//"mp_weapon_mgl",
 		//"mp_weapon_rocket_launcher",
@@ -1590,8 +1591,8 @@ void function InitDefaultTitanList()
 		"behavior_titan",								// embarkedBehavior
 		"#NPC_TITAN_ATLAS_STICKYBOMB",					// embarkedTitle
 		NPCIonLoadout, 											// no loadout function
-		1,												// imc team skinIndex
-		3												// mlt team skinIndex
+		-1,												// imc team skinIndex
+		-1												// mlt team skinIndex
 	)
 
 	// scorch
@@ -1606,8 +1607,8 @@ void function InitDefaultTitanList()
 		"behavior_titan_ogre_meteor",					// embarkedBehavior
 		"#NPC_TITAN_OGRE_METEOR",						// embarkedTitle
 		NPCScorchLoadout, 											// no loadout function
-		1,												// imc team skinIndex
-		9												// mlt team skinIndex
+		-1,												// imc team skinIndex
+		-1												// mlt team skinIndex
 	)
 
 	// northstar
@@ -1622,8 +1623,8 @@ void function InitDefaultTitanList()
 		"behavior_titan_sniper",						// embarkedBehavior
 		"#NPC_TITAN_STRYDER_SNIPER",					// embarkedTitle
 		NPCNorthstarLoadout, 											// no loadout function
-		1,												// imc team skinIndex
-		3												// mlt team skinIndex
+		-1,												// imc team skinIndex
+		-1												// mlt team skinIndex
 	)
 
 	// ronin
@@ -1639,7 +1640,7 @@ void function InitDefaultTitanList()
 		"#NPC_TITAN_STRYDER_LEADWALL",					// embarkedTitle
 		NPCRoninLoadout, 											// no loadout function
 		-1,												// imc team skinIndex, -1 means don't reset
-		3												// mlt team skinIndex
+		-1												// mlt team skinIndex
 	)
 
 	// tone
@@ -1655,7 +1656,7 @@ void function InitDefaultTitanList()
 		"#NPC_TITAN_ATLAS_TRACKER",						// embarkedTitle
 		NPCToneLoadout, 											// no loadout function
 		-1,												// imc team skinIndex, -1 means don't reset
-		1												// mlt team skinIndex
+		-1												// mlt team skinIndex
 	)
 
 	// legion
@@ -1670,8 +1671,8 @@ void function InitDefaultTitanList()
 		"behavior_titan_ogre_minigun",					// embarkedBehavior
 		"#NPC_TITAN_OGRE_MINIGUN",						// embarkedTitle
 		NPCLegionLoadout, 								// loadout function: change core weapon
-		1,												// imc team skinIndex
-		3												// mlt team skinIndex
+		-1,												// imc team skinIndex
+		-1												// mlt team skinIndex
 	)
 
 	// monarch
@@ -1686,8 +1687,8 @@ void function InitDefaultTitanList()
 		"behavior_titan_long_range",					// embarkedBehavior
 		"#NPC_TITAN_ATLAS_VANGUARD",					// embarkedTitle
 		NPCMonarchLoadout, 								// loadout function: change core weapon
-		19,												// imc team skinIndex, -1 means don't reset
-		3												// mlt team skinIndex
+		-1,												// imc team skinIndex, -1 means don't reset
+		-1												// mlt team skinIndex
 	)
 
 		// brute
@@ -1703,8 +1704,8 @@ void function InitDefaultTitanList()
 			"behavior_titan_rocketeer",						// embarkedBehavior
 			"Brute",					// embarkedTitle
 			NPCBruteLoadout,								// loadout function
-			6,												// imc team skinIndex
-			8												// mlt team skinIndex
+			-1,												// imc team skinIndex
+			-1												// mlt team skinIndex
 		)
 
 	// adding archon support
@@ -1743,6 +1744,22 @@ void function NPCOgreTitanCoreReplace( entity titan )
 {
 	titan.TakeOffhandWeapon( OFFHAND_EQUIPMENT )
 	titan.GiveOffhandWeapon( "mp_titancore_flame_wave", OFFHAND_EQUIPMENT )
+}
+
+void function RandomPilotCamo( entity pilot ) // picks a random camo then sets it on the pilot to make it look like a player
+{
+    // get random camo for pilot
+	int randompilotcamo = RandomIntRange( 0, 159 ) // 159 is all camos
+	pilot.SetSkin( 1 ) // pilot color has skinIndex set to 1
+	pilot.SetCamo( randompilotcamo ) // set camo 
+}
+
+void function RandomTitanCamo( entity titan ) // picks a random camo then sets it on the titan to make it look like a player titan
+{
+    // get random camo for auto titan
+	int randomtitancamo = RandomIntRange( 0, 159 ) // 159 is all camos
+	titan.SetSkin( 2 ) // titan color has skinIndex set to 2
+	titan.SetCamo( randomtitancamo ) // set camo to random
 }
 
 // upgrade core setup for npc usage
@@ -1809,7 +1826,7 @@ titan.SetModel( $"models/titans/light/titan_light_northstar_prime.mdl" )
 entity soul = titan.GetTitanSoul()
 soul.soul.titanLoadout.titanExecution = "execution_random_2"
 }
-
+RandomTitanCamo( titan )
 if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
 {
 titan.SetMaxHealth(10000)
@@ -1827,7 +1844,7 @@ titan.SetModel( $"models/titans/light/titan_light_ronin_prime.mdl" )
 entity soul = titan.GetTitanSoul()
 soul.soul.titanLoadout.titanExecution = "execution_random_3"
 }
-
+RandomTitanCamo( titan )
 if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
 {
 titan.SetMaxHealth(10000)
@@ -1845,7 +1862,7 @@ if ( RandomInt( 2 ) < 1 )
 titan.SetModel( $"models/titans/medium/titan_medium_ion_prime.mdl" )
 soul.soul.titanLoadout.titanExecution = "execution_random_0"
 }
-
+RandomTitanCamo( titan )
 if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
 {
 titan.SetMaxHealth(12500)
@@ -1863,7 +1880,7 @@ titan.SetModel( $"models/titans/heavy/titan_heavy_scorch_prime.mdl" )
 entity soul = titan.GetTitanSoul()
 soul.soul.titanLoadout.titanExecution = "execution_random_1"
 }
-
+RandomTitanCamo( titan )
 if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
 {
 titan.SetMaxHealth(15000)
@@ -1880,7 +1897,7 @@ titan.SetModel( $"models/titans/medium/titan_medium_tone_prime.mdl" )
 entity soul = titan.GetTitanSoul()
 soul.soul.titanLoadout.titanExecution = "execution_random_4"
 }
-
+RandomTitanCamo( titan )
 if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
 {
 titan.SetMaxHealth(12500)
@@ -1897,7 +1914,7 @@ titan.SetModel( $"models/titans/heavy/titan_heavy_legion_prime.mdl" )
 entity soul = titan.GetTitanSoul()
 soul.soul.titanLoadout.titanExecution = "execution_random_5"
 }
-
+RandomTitanCamo( titan )
 if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
 {
 titan.SetMaxHealth(15000)
@@ -1912,14 +1929,6 @@ RandomTitan( titan )
 	//NPCAtlasTitanCoreReplace( titan )
 	// upgrade core has been scripted, we needs to setup
 	NPCUpgradeCoreSetUp( titan )
-
-	// imc team camo
-	int team = titan.GetTeam()
-	if ( team == TEAM_IMC )
-	{
-		titan.SetSkin( TITAN_SKIN_INDEX_CAMO )
-		titan.SetCamo( 19 ) // overcast
-	}
 entity soul = titan.GetTitanSoul()
 
 if ( RandomInt( 100 ) < 65 )
@@ -1931,7 +1940,7 @@ if ( RandomInt( 100 ) < 35 && !SoulHasPassive( soul, ePassives.PAS_VANGUARD_CORE
 {
 GivePassive( soul, ePassives.PAS_VANGUARD_DOOM )
 }
-
+RandomTitanCamo( titan )
 if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
 {
 titan.SetMaxHealth(12500)
@@ -1976,7 +1985,8 @@ NPCPrimeTitanCamoSetup( titan )
 	//	MeleeSyncedTitan_SetSoulShouldReplaceLoadoutOnExecution( soul, true ) // required for executions behave nicely
 
 	// camo for prime titans
-	NPCPrimeTitanCamoSetup( titan )
+	//NPCPrimeTitanCamoSetup( titan )
+	RandomTitanCamo( titan )
 if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
 {
 titan.SetMaxHealth(10000)
@@ -1987,8 +1997,7 @@ titan.SetHealth(10000)
 // adding archon support
 void function NPCArcLoadout( entity titan )
 {
-
-        RandomTitan( titan )
+RandomTitan( titan )
 if ( RandomInt( 2 ) < 1 )
 {
 titan.SetModel( $"models/titans/medium/titan_medium_ion_prime.mdl" )
@@ -2018,7 +2027,8 @@ NPCPrimeTitanCamoSetup( titan )
 		//MeleeSyncedTitan_SetSoulShouldReplaceLoadoutOnExecution( soul, true ) // required for executions behave nicely
 
 	// camo for prime titans
-	NPCPrimeTitanCamoSetup( titan )
+	//NPCPrimeTitanCamoSetup( titan )
+	RandomTitanCamo( titan )
 if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
 {
 titan.SetMaxHealth(12500)
@@ -2490,60 +2500,10 @@ void function InitDefaultBossTitanList()
 	)
        
         
-	// Neko
+		// Neko
 	ExtraSpawner_RegisterToBossTitanSpawnList
 	(
 		"neko",										// spawn name. unique
-		"",												// boss name. leave empty if this is not a valid boss titan
-		"titan_buddy",									// setFile
-		"npc_titan_vanguard",							// aiSet. was using npc_titan_buddy but it won't show health bar
-		"behavior_titan_long_range",					// titan behavior
-		"execution_bt",									// executionRef
-		"NekoUwUGamerfnf",						// boss title
-		"NekoUwUGamerfnf",										// pilot title. can't use localized string
-		$"models/humans/pilots/pilot_light_jester_m.mdl",
-		BossLoadout_Neko, 							// loadout function
-		-1,												// skin index
-		-1												// decal index
-	)
-        /*
-        ExtraSpawner_RegisterToBossTitanSpawnList
-	(
-		"spectre",											// spawn name. unique
-		"",											// boss name
-		"titan_stryder_leadwall",						// setFile
-		"npc_titan_stryder_leadwall",					// aiSet
-		"behavior_titan_shotgun",						// titan behavior
-		"execution_ronin_prime",						// executionRef
-		"Spectre",								// boss title
-		"Spectre",											// pilot title. can't use localized string
-		$"models/robots/spectre/imc_spectre.mdl",		// character model
-		BossLoadout_Spectre,
-		9,												// skin index
-		10												// decal index
-	)
-        */
-		// Neko_tone
-	ExtraSpawner_RegisterToBossTitanSpawnList
-	(
-		"neko_tone",										// spawn name. unique
-		"",												// boss name. leave empty if this is not a valid boss titan
-		"titan_atlas_tracker",									// setFile
-		"npc_titan_atlas_tracker",							// aiSet. was using npc_titan_buddy but it won't show health bar
-		"behavior_titan_long_range",					// titan behavior
-		"execution_tone",									// executionRef
-		"NekoUwUGamerfnf",						// boss title
-		"NekoUwUGamerfnf",										// pilot title. can't use localized string
-		$"models/humans/pilots/pilot_light_jester_m.mdl",
-		BossLoadout_NekoTone, 							// loadout function
-                2,
-                0
-	)
-
-		// Neko_Monarch
-	ExtraSpawner_RegisterToBossTitanSpawnList
-	(
-		"neko_monarch",										// spawn name. unique
 		"",												// boss name. leave empty if this is not a valid boss titan
 		"titan_atlas_vanguard",									// setFile
 		"npc_titan_atlas_vanguard",							// aiSet. was using npc_titan_buddy but it won't show health bar
@@ -2551,10 +2511,10 @@ void function InitDefaultBossTitanList()
 		"execution_vanguard_kit",									// executionRef
 		"NekoUwUGamerfnf",						// boss title
 		"NekoUwUGamerfnf",										// pilot title. can't use localized string
-		$"models/humans/pilots/pilot_light_jester_m.mdl",
-		BossLoadout_NekoMonarch, 							// loadout function
-		2,												// skin index
-		0												// decal index
+		$"models/humans/pilots/pilot_medium_geist_m.mdl",
+		BossLoadout_Neko, 							// loadout function
+		138,												// skin index
+		-1												// decal index
 	)
 
 		// BT-7274
@@ -2567,8 +2527,8 @@ void function InitDefaultBossTitanList()
 		"behavior_titan_long_range",					// titan behavior
 		"execution_bt",									// executionRef
 		"BT-7274",						// boss title
-		"Some bullshit",										// pilot title. can't use localized string
-		$"models/humans/pilots/pilot_light_jester_m.mdl",
+		"BT-7274",										// pilot title. can't use localized string
+		$"models/humans/pilots/pilot_medium_geist_m.mdl",
 		BossLoadout_BT7274, 							// loadout function
 		-1,												// skin index
 		-1												// decal index
@@ -2584,8 +2544,8 @@ void function InitDefaultBossTitanList()
 		"behavior_titan_long_range",					// titan behavior
 		"execution_bt",									// executionRef
 		"FS-1041",						// boss title
-		"Some bullshit",										// pilot title. can't use localized string
-		$"models/humans/pilots/pilot_light_jester_m.mdl",
+		"FS-1041",										// pilot title. can't use localized string
+		$"models/humans/pilots/pilot_medium_geist_m.mdl",
 		BossLoadout_FS1041, 							// loadout function
 		-1,											// skin index
 		-1												// decal index
@@ -2602,7 +2562,7 @@ void function InitDefaultBossTitanList()
 		"execution_tone",									// executionRef
 		"David",						// boss title
 		"David",										// pilot title. can't use localized string
-		$"models/humans/pilots/pilot_medium_geist_m.mdl",		// character model. just use a random picking model. no model is similar to aderson's in MP
+		$"models/humans/pilots/pilot_medium_geist_m.mdl",		// character model
 		davidloadout, 							// loadout function
 		9,												// skin index
 		0											// decal index
@@ -2618,7 +2578,7 @@ void function InitDefaultBossTitanList()
 		"execution_bt",									// executionRef
 		"Ilovepans",						// boss title
 		"Ilovepans",										// pilot title. can't use localized string
-		$"models/humans/pilots/pilot_medium_geist_m.mdl",		// character model. just use a random picking model. no model is similar to aderson's in MP
+		$"models/humans/pilots/pilot_medium_geist_m.mdl",		// character model.
 		Ilovepansloadout, 							// loadout function
 		0,												// skin index
 		0											// decal index
@@ -2635,7 +2595,7 @@ void function InitDefaultBossTitanList()
 		"execution_bt",									// executionRef
 		"Thunder",						// boss title
 		"Thunder",										// pilot title. can't use localized string
-		$"models/humans/pilots/pilot_medium_stalker_m.mdl",		// character model. just use a random picking model. no model is similar to aderson's in MP
+		$"models/humans/pilots/pilot_medium_stalker_m.mdl",		// character model.
 		Thunder, 							// loadout function
 		0,												// skin index
 		0											// decal index
@@ -2652,7 +2612,7 @@ void function InitDefaultBossTitanList()
 		"execution_tone",									// executionRef
 		"Saffron",						// boss title
 		"Saffron",										// pilot title. can't use localized string
-		$"models/humans/pilots/pilot_medium_reaper_f.mdl",		// character model. just use a random picking model. no model is similar to aderson's in MP
+		$"models/humans/pilots/pilot_medium_reaper_f.mdl",		// character model.
 		Saffron, 							// loadout function
 		9,												// skin index
 		0											// decal index
@@ -2669,7 +2629,7 @@ void function InitDefaultBossTitanList()
 		"execution_bt",									// executionRef
 		"#TRAINING_ANDERSON_NAME",						// boss title
 		"Anderson",										// pilot title. can't use localized string
-		//$"models/humans/pilots/pilot_medium_geist_m.mdl",		// character model. just use a random picking model. no model is similar to aderson's in MP
+		//$"models/humans/pilots/pilot_medium_geist_m.mdl",		// character model. just use a random picking model. no model is similar to anderson's in MP
 		$"models/humans/pilots/sp_medium_reaper_m.mdl",
 		BossLoadout_Anderson, 							// loadout function
 		-1,												// skin index
@@ -2819,7 +2779,7 @@ GivePassive( soul, ePassives.PAS_HYPER_CORE )
 }
 if ( RandomInt( 100 ) < 20 && !SoulHasPassive( soul, ePassives.PAS_BUILD_UP_NUCLEAR_CORE ) && !SoulHasPassive( soul, ePassives.PAS_HYPER_CORE ))
 {
-ExtraSpawner_SetEmbarkedNPCTitanDeathEjectDamageThreshold( titan, 2500000 )
+ExtraSpawner_SetEmbarkedNPCTitanDeathEjectDamageThreshold( titan, 2500 )
 TitanHealth_SetSoulNPCPilotEjectDelay( soul, 0 )
 ExtraSpawner_EnableEmbarkedNPCTitanEjectOnDeath( titan, true )
 ExtraSpawner_AllowTitanDeathEjectRedirectKillCredit( titan, true )
@@ -2962,12 +2922,6 @@ void function BossLoadout_Blisk( entity titan )
 // buffed loadouts for boss
 void function BossLoadout_Ion( entity titan )
 {
-if ( RandomInt( 2 ) < 1 )
-{
-titan.SetModel( $"models/titans/medium/titan_medium_ion_prime.mdl" )
-entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_random_0"
-}
 	// generic loadout function for boss titan
 	altBossLoadout_Generic( titan )
 
@@ -3033,12 +2987,6 @@ void function FullNPCKitsToneLoadout( entity titan )
 
 void function BossLoadout_Legion( entity titan )
 {
-if ( RandomInt( 2 ) < 1 )
-{
-titan.SetModel( $"models/titans/heavy/titan_heavy_legion_prime.mdl" )
-entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_random_5"
-}
 	// generic loadout function for boss titan
 	altBossLoadout_Generic( titan )
 
@@ -3068,12 +3016,6 @@ void function FullNPCKitsLegionLoadout( entity titan )
 
 void function BossLoadout_Scorch( entity titan )
 {
-if ( RandomInt( 2 ) < 1 )
-{
-titan.SetModel( $"models/titans/heavy/titan_heavy_scorch_prime.mdl" )
-entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_random_1"
-}
 	// generic loadout function for boss titan
 	altBossLoadout_Generic( titan )
 
@@ -3124,12 +3066,6 @@ GivePassive( soul, ePassives.PAS_RONIN_SWORDCORE ) // Gives Ronin Extended Core 
 
 void function BossLoadout_Ronin( entity titan )
 {
-if ( RandomInt( 2 ) < 1 )
-{
-titan.SetModel( $"models/titans/light/titan_light_ronin_prime.mdl" )
-entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_random_3"
-}
 	// generic loadout function for boss titan
 	altBossLoadout_Generic( titan )
 
@@ -3163,12 +3099,6 @@ void function FullNPCKitsRoninLoadout( entity titan )
 
 void function BossLoadout_Northstar( entity titan )
 {
-if ( RandomInt( 2 ) < 1 )
-{
-titan.SetModel( $"models/titans/light/titan_light_northstar_prime.mdl" )
-entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_random_2"
-}
 	// generic loadout function for boss titan
 	altBossLoadout_Generic( titan )
 
@@ -3286,12 +3216,6 @@ titan.SetHealth(12500)
 
 void function davidloadout( entity titan )
 {
-if ( RandomInt( 2 ) < 1 )
-{
-titan.SetModel( $"models/titans/medium/titan_medium_tone_prime.mdl" )
-entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_random_4"
-}
     TakeAllWeapons( titan )
      altBossLoadout_Generic( titan )
 
@@ -3343,12 +3267,6 @@ titan.SetHealth(12500)
 
 void function Saffron( entity titan )
 {
-if ( RandomInt( 2 ) < 1 )
-{
-titan.SetModel( $"models/titans/medium/titan_medium_tone_prime.mdl" )
-entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_random_4"
-}
 BossLoadout_Generic( titan )
 TakeAllWeapons( titan )
 titan.GiveWeapon( "mp_titanweapon_arc_cannon" )
@@ -3364,14 +3282,7 @@ titan.SetHealth(12500)
 
 void function BossLoadout_Arc( entity titan )
 {
-if ( RandomInt( 2 ) < 1 )
-{
-titan.SetModel( $"models/titans/medium/titan_medium_ion_prime.mdl" )
-entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_random_0"
-}
 altBossLoadout_Generic( titan )
-
 TakeAllWeapons( titan )
 	//Weapon
 	titan.GiveWeapon( "mp_titanweapon_arc_cannon" )
@@ -3397,14 +3308,7 @@ titan.SetHealth(12500)
 
 void function BossLoadout_Brute( entity titan )
 {
-if ( RandomInt( 2 ) < 1 )
-{
-titan.SetModel( $"models/titans/light/titan_light_northstar_prime.mdl" )
-entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_random_2"
-}    
      altBossLoadout_Generic( titan )
-
      TakeAllWeapons( titan )
 	//Weapon
 	titan.GiveWeapon( "mp_titanweapon_rocketeer_rocketstream" )
@@ -3435,224 +3339,6 @@ if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
 {
 titan.SetMaxHealth(10000)
 titan.SetHealth(10000)
-}
-}
-
-void function BossLoadout_Neko( entity titan )
-{
-	// game behavior settings
-	NPCVanguard_SetUpTitan( titan )
-
-	// welp, there's something way too weird: pilots can sometimes play their intro animation???? emitting to the dropship sound that everyone could hear
-	// happens after I adding holopilot and cloak ability for them. after disabling capability to attack, their animation went weird
-	// guess I'll remove all boss titan disembarking/ejecting case...
-
-	// boss titan rewards themselves a battery on performing execution
-	//BossLoadout_ExecutionGivesBattery( titan )
-	//BossLoadout_Generic_NoModelForMP( titan ) // make them never eject, with basic setups for a boss titan
-	// vanguard setup all handled by NPCVanguard_SetUpTitan()
-
-	// re-assign weapons
-	titan.TakeWeaponNow( "mp_titanweapon_xo16_shorty" ) // don't use a one-shot killing xo16!
-	// removing healing electric smoke
-	//titan.GiveWeapon( "mp_titanweapon_xo16_vanguard", ["battle_rifle", "battle_rifle_icon", "fd_vanguard_utility_2"] )
-	titan.GiveWeapon( "mp_titanweapon_sticky_40mm", ["extended_ammo"])
-
-	// add back multi-targeting missile for sarah because we've removed vanguard expedition loadout
-	// is that really needed? can npcs use them well? or it will be a bit too overpowered?
-	// idk, guess I'll use cluster missile now
-	titan.TakeOffhandWeapon( OFFHAND_ORDNANCE )
-	//titan.GiveOffhandWeapon( "mp_titanweapon_salvo_rockets", OFFHAND_ORDNANCE, ["missile_racks"] )
-	//titan.GetOffhandWeapon( OFFHAND_ORDNANCE ).AddMod( "upgradeCore_MissileRack_Vanguard" ) // fix mod: lock on heavy armor target only
-	titan.GiveOffhandWeapon( "mp_titanweapon_shoulder_rockets", OFFHAND_ORDNANCE )
-
-	titan.TakeOffhandWeapon( OFFHAND_SPECIAL )
-	titan.GiveOffhandWeapon( "mp_ability_swordblock", OFFHAND_SPECIAL )
-	
-	titan.TakeOffhandWeapon( OFFHAND_EQUIPMENT )
-	titan.GiveOffhandWeapon( "mp_titancore_flame_wave", OFFHAND_EQUIPMENT )
-	//NPCVanguard_UpgradeCore( titan )
-
-titan.SetMaxHealth(12500)
-titan.SetHealth(12500)
-}
-/*
-void function BossLoadout_NekoVanguard( entity titan )
-{
-	// game behavior settings
-	NPCVanguard_SetUpTitan( titan )
-
-	// welp, there's something way too weird: pilots can sometimes play their intro animation???? emitting to the dropship sound that everyone could hear
-	// happens after I adding holopilot and cloak ability for them. after disabling capability to attack, their animation went weird
-	// guess I'll remove all boss titan disembarking/ejecting case...
-
-	// boss titan rewards themselves a battery on performing execution
-	//BossLoadout_ExecutionGivesBattery( titan )
-	//BossLoadout_Generic_NoModelForMP( titan ) // make them never eject, with basic setups for a boss titan
-	// vanguard setup all handled by NPCVanguard_SetUpTitan()
-
-	// re-assign weapons
-	titan.TakeWeaponNow( "mp_titanweapon_xo16_shorty" ) // don't use a one-shot killing xo16!
-	// removing healing electric smoke
-	//titan.GiveWeapon( "mp_titanweapon_xo16_vanguard", ["battle_rifle", "battle_rifle_icon", "fd_vanguard_utility_2"] )
-	titan.GiveWeapon( "mp_titanweapon_sticky_40mm", ["extended_ammo"])
-
-	// add back multi-targeting missile for sarah because we've removed vanguard expedition loadout
-	// is that really needed? can npcs use them well? or it will be a bit too overpowered?
-	// idk, guess I'll use cluster missile now
-	titan.TakeOffhandWeapon( OFFHAND_ORDNANCE )
-	//titan.GiveOffhandWeapon( "mp_titanweapon_salvo_rockets", OFFHAND_ORDNANCE, ["missile_racks"] )
-	//titan.GetOffhandWeapon( OFFHAND_ORDNANCE ).AddMod( "upgradeCore_MissileRack_Vanguard" ) // fix mod: lock on heavy armor target only
-	titan.GiveOffhandWeapon( "mp_titanweapon_shoulder_rockets", OFFHAND_ORDNANCE )
-
-	titan.TakeOffhandWeapon( OFFHAND_SPECIAL )
-	titan.GiveOffhandWeapon( "mp_titanweapon_heat_shield", OFFHAND_SPECIAL )
-	
-	titan.TakeOffhandWeapon( OFFHAND_EQUIPMENT )
-	titan.GiveOffhandWeapon( "mp_titancore_flame_wave", OFFHAND_EQUIPMENT )
-	//NPCVanguard_UpgradeCore( titan )
-
-	// passives update
-	entity soul = titan.GetTitanSoul()
-	if ( IsValid( soul ) )
-	{
-	}
-}
-*/
-void function BossLoadout_NekoTone( entity titan )
-{
-if ( RandomInt( 2 ) < 1 )
-{
-titan.SetModel( $"models/titans/medium/titan_medium_tone_prime.mdl" )
-entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_random_4"
-}
-	//BossLoadout_ExecutionGivesBattery( titan )
-	//BossLoadout_Generic_NoModelForMP( titan ) // make them never eject, with basic setups for a boss titan
-	BossLoadout_Generic( titan )
-
-	// re-assign weapons
-	titan.TakeWeaponNow( "mp_titanweapon_xo16_shorty" ) // don't use a one-shot killing xo16!
-	// removing healing electric smoke
-	//titan.GiveWeapon( "mp_titanweapon_xo16_vanguard", ["battle_rifle", "battle_rifle_icon", "fd_vanguard_utility_2"] )
-	titan.GiveWeapon( "mp_titanweapon_sticky_40mm", ["extended_ammo"])
-
-	// add back multi-targeting missile for sarah because we've removed vanguard expedition loadout
-	// is that really needed? can npcs use them well? or it will be a bit too overpowered?
-	// idk, guess I'll use cluster missile now
-	titan.TakeOffhandWeapon( OFFHAND_ORDNANCE )
-	//titan.GiveOffhandWeapon( "mp_titanweapon_salvo_rockets", OFFHAND_ORDNANCE, ["missile_racks"] )
-	//titan.GetOffhandWeapon( OFFHAND_ORDNANCE ).AddMod( "upgradeCore_MissileRack_Vanguard" ) // fix mod: lock on heavy armor target only
-	titan.GiveOffhandWeapon( "mp_titanweapon_shoulder_rockets", OFFHAND_ORDNANCE )
-
-	titan.TakeOffhandWeapon( OFFHAND_SPECIAL )
-	titan.GiveOffhandWeapon( "mp_titanweapon_heat_shield", OFFHAND_SPECIAL )
-
-	titan.TakeOffhandWeapon( OFFHAND_EQUIPMENT )
-	titan.GiveOffhandWeapon( "mp_titancore_salvo_core", OFFHAND_EQUIPMENT )
-	//NPCVanguard_UpgradeCore( titan )
-
-if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
-{
-titan.SetMaxHealth(12500)
-titan.SetHealth(12500)
-}
-}
-
-void function BossLoadout_Nekoatlas( entity titan )
-{
-	BossLoadout_ExecutionGivesBattery( titan )
-	//BossLoadout_Generic_NoModelForMP( titan ) // make them never eject, with basic setups for a boss titan
-        withpilotBossLoadout_NukeEject( titan )
-
-	// re-assign weapons
-	titan.TakeWeaponNow( "mp_titanweapon_xo16_shorty" ) // don't use a one-shot killing xo16!
-	// removing healing electric smoke
-	//titan.GiveWeapon( "mp_titanweapon_xo16_vanguard", ["battle_rifle", "battle_rifle_icon", "fd_vanguard_utility_2"] )
-	titan.GiveWeapon( "mp_titanweapon_sticky_40mm", ["extended_ammo"])
-
-	// add back multi-targeting missile for sarah because we've removed vanguard expedition loadout
-	// is that really needed? can npcs use them well? or it will be a bit too overpowered?
-	// idk, guess I'll use cluster missile now
-	titan.TakeOffhandWeapon( OFFHAND_ORDNANCE )
-	//titan.GiveOffhandWeapon( "mp_titanweapon_salvo_rockets", OFFHAND_ORDNANCE, ["missile_racks"] )
-	//titan.GetOffhandWeapon( OFFHAND_ORDNANCE ).AddMod( "upgradeCore_MissileRack_Vanguard" ) // fix mod: lock on heavy armor target only
-	titan.GiveOffhandWeapon( "mp_titanweapon_shoulder_rockets", OFFHAND_ORDNANCE )
-
-	titan.TakeOffhandWeapon( OFFHAND_SPECIAL )
-	titan.GiveOffhandWeapon( "mp_titanweapon_heat_shield", OFFHAND_SPECIAL )
-
-	titan.TakeOffhandWeapon( OFFHAND_EQUIPMENT )
-	titan.GiveOffhandWeapon( "mp_titancore_salvo_core", OFFHAND_EQUIPMENT )
-	//NPCVanguard_UpgradeCore( titan )
-
-if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
-{
-titan.SetMaxHealth(12500)
-titan.SetHealth(12500)
-}
-}
-
-void function NekoVanguard_change( entity titan, bool replacePilot = true )
-{
-	TonePilot pickedPilot = file.tonepilots[ RandomInt( file.tonepilots.len() ) ]
-	if ( replacePilot )
-
-	entity soul = titan.GetTitan()
-	if ( IsValid( titan ) )
-	{
-		if ( replacePilot )
-		{
-			titan.seatedNpcPilot.title = pickedPilot.pilotTitle
-			titan.seatedNpcPilot.modelAsset = pickedPilot.pilotModel
-			// add mark to let us know what kind of pilot we have
-			file.soulVanguardPilotName[ titan ] <- pickedPilot.pilotName
-		}
-        }
-}
-
-void function BossLoadout_Nekomonarch( entity titan )
-{
-	BossLoadout_ExecutionGivesBattery( titan )
-	//BossLoadout_Generic_NoModelForMP( titan ) // make them never eject, with basic setups for a boss titan
-        withpilotBossLoadout_NukeEject( titan )
-
-	// re-assign weapons
-	TakeAllWeapons( titan )
-
-	// re-assign weapons
-	titan.TakeWeaponNow( "mp_titanweapon_xo16_vanguard" ) // don't use a one-shot killing xo16!
-	// removing healing electric smoke
-	//titan.GiveWeapon( "mp_titanweapon_xo16_vanguard", ["battle_rifle", "battle_rifle_icon", "fd_vanguard_utility_2"] )
-	titan.GiveWeapon( "mp_titanweapon_xo16_vanguard", ["arc_rounds"] )
-
-	// add back multi-targeting missile for sarah because we've removed vanguard expedition loadout
-	// is that really needed? can npcs use them well? or it will be a bit too overpowered?
-	// idk, guess I'll use cluster missile now
-	titan.TakeOffhandWeapon( OFFHAND_ORDNANCE )
-	//titan.GiveOffhandWeapon( "mp_titanweapon_salvo_rockets", OFFHAND_ORDNANCE, ["missile_racks"] )
-	//titan.GetOffhandWeapon( OFFHAND_ORDNANCE ).AddMod( "upgradeCore_MissileRack_Vanguard" ) // fix mod: lock on heavy armor target only
-	titan.GiveOffhandWeapon( "mp_titanweapon_shoulder_rockets", OFFHAND_ORDNANCE )
-
-    titan.TakeOffhandWeapon( OFFHAND_ANTIRODEO )
-    titan.GiveOffhandWeapon( "mp_titanability_smoke", OFFHAND_ANTIRODEO )
-
-	titan.TakeOffhandWeapon( OFFHAND_SPECIAL )
-	titan.GiveOffhandWeapon( "mp_titanweapon_vortex_shield", OFFHAND_SPECIAL )
-
-        titan.GetOffhandWeapon( OFFHAND_SPECIAL ).AddMod( "slow_recovery_vortex" ) // fix weapon mod
-	titan.GetOffhandWeapon( OFFHAND_SPECIAL ).AddMod( "pas_ion_vortex" ) // buffed boss loadout
-	titan.GetOffhandWeapon( OFFHAND_ORDNANCE ).AddMod( "upgradeCore_MissileRack_Vanguard" ) // fix mod: lock on heavy armor target only
-
-
-	titan.TakeOffhandWeapon( OFFHAND_EQUIPMENT )
-	titan.GiveOffhandWeapon( "mp_titancore_laser_cannon", OFFHAND_EQUIPMENT )
-	//NPCVanguard_UpgradeCore( titan )
-
-if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
-{
-titan.SetMaxHealth(12500)
-titan.SetHealth(12500)
 }
 }
 
@@ -3704,11 +3390,11 @@ void function nopilotNPCVanguard_SetUpTitan( entity titan, bool replacePilot = f
 }
 
 
-void function BossLoadout_NekoMonarch( entity titan )
+void function BossLoadout_Neko( entity titan )
 {
 	//BossLoadout_ExecutionGivesBattery( titan )
 	//BossLoadout_Generic_NoModelForMP( titan ) // make them never eject, with basic setups for a boss titan
-	BossLoadout_Generic( titan )
+	altBossLoadout_Generic( titan )
 
 	// re-assign weapons
 	TakeAllWeapons( titan )
@@ -3905,50 +3591,6 @@ void function BossLoadout_Sarah( entity titan )
 titan.SetMaxHealth(12500)
 titan.SetHealth(12500)
 }
-/*
-void function BossLoadout_Spectre( entity titan )
-{
-	// game behavior settings
-	//entity soul = titan.GetTitanSoul()
-	//if ( IsValid( soul ) )
-	//	PlayerEarnMeter_SetSoulEarnMeterSmokeEnabled( soul, false )	// disable earnmeter smoke availability, they already have electric smoke
-	
-	// welp, there's something way too weird: pilots can sometimes play their intro animation???? emitting to the dropship sound that everyone could hear
-	// happens after I adding holopilot and cloak ability for them. after disabling capability to attack, their animation went weird
-	// guess I'll remove all boss titan disembarking/ejecting case...
-
-	// boss titan rewards themselves a battery on performing execution
-	//BossLoadout_ExecutionGivesBattery( titan )
-	//BossLoadout_Generic_NoModelForMP( titan ) // make them never eject, with basic setups for a boss titan
-	BossLoadout_Generic( titan )
-
-	// re-assign weapons
-	//titan.GetMainWeapons()[0].SetMods( ["battle_rifle", "battle_rifle_icon", "fd_vanguard_utility_2", "arc_rounds"] )
-	
-	titan.TakeOffhandWeapon( OFFHAND_ORDNANCE )
-	titan.GiveOffhandWeapon( "mp_titanweapon_shoulder_rockets", OFFHAND_ORDNANCE )
-	titan.GetOffhandWeapon( OFFHAND_ORDNANCE ).AddMod( "upgradeCore_MissileRack_Vanguard" ) // fix mod: lock on heavy armor target only
-	
-	titan.TakeOffhandWeapon( OFFHAND_SPECIAL )
-	//titan.GiveOffhandWeapon( "mp_titanweapon_stun_laser", OFFHAND_SPECIAL, ["energy_field_energy_transfer"] )
-	titan.GiveOffhandWeapon( "mp_titanweapon_vortex_shield", OFFHAND_SPECIAL )
-        titan.GetOffhandWeapon( OFFHAND_SPECIAL ).AddMod( "slow_recovery_vortex" ) // fix weapon mod
-	titan.GetOffhandWeapon( OFFHAND_SPECIAL ).AddMod( "pas_ion_vortex" ) // buffed boss loadout
-	
-	titan.TakeOffhandWeapon( OFFHAND_ANTIRODEO )
-	titan.GiveOffhandWeapon( "mp_titanability_smoke", OFFHAND_ANTIRODEO )
-
-	//titan.TakeOffhandWeapon( OFFHAND_EQUIPMENT )
-	//titan.GiveOffhandWeapon( "mp_titancore_amp_core", OFFHAND_EQUIPMENT )
-	//titan.GiveOffhandWeapon( "mp_titancore_laser_cannon", OFFHAND_EQUIPMENT )
-
-	// passives update
-	entity soul = titan.GetTitanSoul()
-	if ( IsValid( soul ) )
-	{
-	}
-}
-*/
 
 void function BossLoadout_SarahMonarch( entity titan )
 {
@@ -4185,18 +3827,8 @@ void function InitNPCVanguardLoadouts()
         NekoPilot.pilotName = "Neko"
 	NekoPilot.titanTitle = "NekoUwUGamerfnf"
 	NekoPilot.pilotTitle = "NekoUwUGamerfnf"
-	NekoPilot.pilotModel = $"models/humans/pilots/pilot_light_jester_m.mdl"
+	NekoPilot.pilotModel = $"models/humans/pilots/pilot_medium_geist_m.mdl"
 	file.npcVanguardPilots.append( NekoPilot )
-
-        // weird
-        /*
-        NPCVanguardPilot spectrePilot = clone emptyPilot
-        spectrePilot.pilotName = "Spectre"
-	spectrePilot.titanTitle = "Spectre"
-	spectrePilot.pilotTitle = "Spectre"
-	spectrePilot.pilotModel = $"models/robots/spectre/imc_spectre.mdl"
-	file.npcVanguardPilots.append( spectrePilot )
-        */
 
 	NPCVanguardPilot sarahPilot = clone emptyPilot
 	sarahPilot.pilotName = "sarah"

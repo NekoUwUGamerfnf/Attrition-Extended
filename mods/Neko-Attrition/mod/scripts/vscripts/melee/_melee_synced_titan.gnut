@@ -18,7 +18,7 @@ const STEALTH_TEAM_JUMPJET_DBL = $"P_jump_jet_stealth_DBL"
 const STEALTH_PENEMY_JUMPJET_DBL = $"P_jump_jet_stealth_DBL"
 
 // modified shared utility
-global function MeleeSyncedTitan_GetDefaultExecutionRefForTitanVsTitan3p // wrapped monarch and fake-bt stuffs inside
+global function MeleeSyncedTitan_GetExecutionRefForTitanVsTitan3p // wrapped monarch and fake-bt stuffs inside
 global function MeleeSyncedTitan_TitanHasPilot
 global function SetCallback_OnGetTitan3pExecutionRef // modified callback that allows changing the method we get execution ref
 
@@ -71,6 +71,15 @@ global function MeleeSyncedTitan_GetSoulExecutionTargetRequiredHealthFrac // sha
 // npc can fire laser core at the beginning of animation, needs to get timer before do anything
 global function MeleeSyncedTitan_GetTitanExecutionStartTime
 
+// modified: setup last used execution ref, so we can always get more random stuffs...
+// maybe, I mean maybe... npcs works better with a global value because they only have 1 life
+global function MeleeSyncedTitan_SetTitanLastUsedExecution
+global function MeleeSyncedTitan_SetTitanLastExecutedByRef
+
+// to be shared with sh_melee_synced_titan.gnut
+global function MeleeSyncedTitan_GetTitanLastUsedExecution
+global function MeleeSyncedTitan_GetTitanLastExecutedByRef
+
 enum eTitanExecutionType
 {
 	fistThroughCockpit
@@ -93,6 +102,9 @@ struct TitanExcutionData
 	// mostly for buddy victim animations, because they don't have AE_MELEE_KILLED instead has AE_NPC_SYNCED_MELEE_DEATH
 	// for that case, we kill the target once their sequence is done, force ragdolling them
 	table<string, bool> killTargetOnSequenceEnds
+	// modified variable for us add more pilot sequence detail to fix some behavior..?
+	// maybe no need to implement though... just remove bad pilot sequences
+	table<string, string> targetAnimation3pPilotAttachment
 }
 
 struct
@@ -128,7 +140,11 @@ struct
 	table<entity, float> soulExecutionTargetRequiredHealthFrac // shared with sh_melee.gnut
 
 	// modified variables
-	table<entity, float> titanExecutionStartTime // HACK for npc ion prime execution to use... npc can fire laser core at the beginning of exeuction, needs to get timer before do anything
+	// HACK for npc ion prime execution to use... npc can fire laser core at the beginning of exeuction, needs to get timer before do anything
+	table<entity, float> titanExecutionStartTime
+	// setup last used execution ref, so we can always get more random stuffs...
+	table<entity, string> titanLastExecutionUsed
+	table<entity, string> titanLastExecutedBy
 } file
 
 // we could've use SetHumanRagdollImpactTable() instead of handling this everywhere...
@@ -242,6 +258,31 @@ void function Init3pExecutions()
 	buddyScorchVictimData.attackerAnimation3pPilot[ "buddy" ] <- ""
 	// due we don't have AE_MELEE_KILLED events, target should die on their sequence ends and always ragdoll themselves
 	buddyScorchVictimData.killTargetOnSequenceEnds[ "buddy" ] <- true
+
+
+	// fix for being executed by BT
+	// most MP titans don't have their attachment updated for being executed
+	// so we'd remove their pilot viewbody from existence
+	TitanExcutionData buddyKickshootAttackerData = file.executionData_3p[ "execution_bt_kickshoot" ]
+	// MP titans( monarch and prime titans ) have bad pilot attachments, should be empty
+	buddyKickshootAttackerData.targetAnimation3pPilot[ "stryder" ] <- ""
+	buddyKickshootAttackerData.targetAnimation3pPilot[ "atlas" ] <- ""
+	buddyKickshootAttackerData.targetAnimation3pPilot[ "ogre" ] <- ""
+
+	// welp actually this one don't even have pilot attached inside...
+	/*
+	TitanExcutionData buddyFlipAttackerData = file.executionData_3p[ "execution_bt_flip" ]
+	// MP titans( monarch and prime titans ) have bad pilot attachments, should be empty
+	buddyFlipAttackerData.targetAnimation3pPilot[ "stryder" ] <- ""
+	buddyFlipAttackerData.targetAnimation3pPilot[ "atlas" ] <- ""
+	buddyFlipAttackerData.targetAnimation3pPilot[ "ogre" ] <- ""
+
+	TitanExcutionData buddyDefaultAttackerData = file.executionData_3p[ "execution_bt" ]
+	// MP titans( monarch and prime titans ) have bad pilot attachments, should be empty
+	buddyDefaultAttackerData.targetAnimation3pPilot[ "stryder" ] <- ""
+	buddyDefaultAttackerData.targetAnimation3pPilot[ "atlas" ] <- ""
+	buddyDefaultAttackerData.targetAnimation3pPilot[ "ogre" ] <- ""
+	*/
 }
 
 // vanilla missing!!!! we want other files can get all executions we registered
@@ -574,7 +615,7 @@ void functionref( SyncedMelee action, entity attacker, entity target ) function 
 	TitanLoadoutDef loadout = soul.soul.titanLoadout // GetActiveTitanLoadout( attacker )
 	#endif
 
-	string executionRef = MeleeSyncedTitan_GetDefaultExecutionRefForTitanVsTitan3p( attacker, target )
+	string executionRef = MeleeSyncedTitan_GetExecutionRefForTitanVsTitan3p( attacker, target )
 	//if ( executionRef in file.executionData_3p )
 	if ( executionRef in file.executionData_3p && !useClassicExecution ) // only do 3p execution if we have an ref registered
 		return TitanVsTitan_3p
@@ -613,7 +654,7 @@ void functionref( SyncedMelee action, entity attacker, entity target ) function 
 }
 
 // modified: wrap any execution ref changes into this function
-string function MeleeSyncedTitan_GetDefaultExecutionRefForTitanVsTitan3p( entity attacker, entity target, string forcedRef = "" )
+string function MeleeSyncedTitan_GetExecutionRefForTitanVsTitan3p( entity attacker, entity target, string forcedRef = "" )
 {
 	// if we have callback, run it
 	if ( file.onGetTitan3pExecutionRefCallback != null )
@@ -2652,18 +2693,22 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 	//bool shouldApplyBatteryAfterRodeo = false
 	string attackerType = GetSoulTitanSubClass( attackerSoul )
 
-	// get execution ref from default value
-	string defaultExecution = MeleeSyncedTitan_GetDefaultExecutionRefForTitanVsTitan3p( attacker, target, executionRef )
+	// get execution ref override
+	string overrideExecution = MeleeSyncedTitan_GetExecutionRefForTitanVsTitan3p( attacker, target, executionRef )
 	bool notUsingDefaultExecution = false
-	if ( executionRef != defaultExecution )
+	if ( executionRef != overrideExecution )
 	{
 		//print( "attacker: " + string( attacker ) + " changing execution ref for titan termination" )
 		notUsingDefaultExecution = true // we'll need to update loadout because it's not best one
 		// update it to use best one
-		executionRef = defaultExecution
+		executionRef = overrideExecution
 		data = file.executionData_3p[ executionRef ]
 	}
 	//
+
+	// modified: setup last used execution ref, so we can always get more random stuffs...
+	MeleeSyncedTitan_SetTitanLastUsedExecution( attacker, executionRef )
+	MeleeSyncedTitan_SetTitanLastExecutedByRef( target, executionRef )
 
 	// modified: using passives for checking executions that rewards battery
 	// instead of hardcoding "execution_vanguard_kit"
@@ -2727,18 +2772,13 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 
 	if ( !target.IsNPC() )
 	{
-		HolsterViewModelAndDisableWeapons( target )  //Melee anims need to use this to stop players from firing weapons but for the weapon to still show up in the 3p anims
-		if ( attacker.IsNPC() ) //Defensive fix for the anim events not happening when the attacker is a NPC
-		{
-			ForceTitanRodeoToEnd( target )
-			DisableTitanRodeo( target )
-		}
+		// this will sometimes make executions disable player's offhands forever idk why
+		//HolsterViewModelAndDisableWeapons( target )  //Melee anims need to use this to stop players from firing weapons but for the weapon to still show up in the 3p anims
+		target.DisableWeaponViewModel()
+		target.Server_TurnOffhandWeaponsDisabledOn()
 	}
 	else
-	{
-		target.EnableNPCFlag( NPC_IGNORE_ALL | NPC_DISABLE_SENSING )
 		DisableWeapons( target, [] )
-	}
 
 	// vanilla missing behavior: needs to stop npc animation, otherwise they can trigger animevents earlier than expected
 	// put here is to run before MeleeSyncedTitan_RunLoadoutReplaceCallbackForRef(), so we don't mess up that
@@ -2750,8 +2790,7 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 	// force attacker to use certain execution's weapon, to avoid visual issues
 	// this should also happen when player using random execution or have their execution replaced with best choice
 	// checks removed. we're now checking weapons to decide whether we do loadout replace or not
-	//bool doLoadoutReplace = GetSoulReplaceLoadoutOnExecution( attacker.GetTitanSoul() )
-	//						|| notUsingDefaultExecution
+	//bool doLoadoutReplace = GetSoulReplaceLoadoutOnExecution( attacker.GetTitanSoul() ) || notUsingDefaultExecution			
 
 	// if we don't have required weapons for execution, replace attacker loadout until it ends
 	// put here is to run before attacker.DisableWeaponViewModel(), so we can change their current holding weapon
@@ -2765,14 +2804,12 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 
 	if ( attacker.IsPlayer() )
 	{
-		HolsterViewModelAndDisableWeapons( attacker )  //Melee anims need to use this to stop players from firing weapons but for the weapon to still show up in the 3p anims
+		// this will sometimes make executions disable player's offhands forever idk why
+		//HolsterViewModelAndDisableWeapons( attacker )  //Melee anims need to use this to stop players from firing weapons but for the weapon to still show up in the 3p anims
+		attacker.DisableWeaponViewModel()
+		attacker.Server_TurnOffhandWeaponsDisabledOn()
+		
 		attacker.Anim_StopGesture( DEFAULT_SCRIPTED_ANIMATION_BLEND_TIME )
-	}
-	else
-	{
-		attacker.EnableNPCFlag( NPC_IGNORE_ALL | NPC_DISABLE_SENSING )
-		ForceTitanRodeoToEnd( attacker )  //Anim event of disabling Rodeos on attacker like players does, does not happen to NPCs
-		DisableTitanRodeo( attacker )
 	}
 
 	if ( target.IsPlayer() ) // vanilla missing! target should also stop gesture animation!
@@ -2827,6 +2864,10 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 		targetViewBody.SetContinueAnimatingAfterRagdoll( true )
 
 		targetBodySequence.attachment = "ref"
+		// modified: attachment override
+		if ( victimType in data.targetAnimation3pPilotAttachment )
+			targetBodySequence.attachment = data.targetAnimation3pPilotAttachment[ victimType ]
+		//
 		targetBodySequence.teleport = true
 		targetBodySequence.thirdPersonAnim = data.targetAnimation3pPilot[ victimType ]
 
@@ -2900,15 +2941,16 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 					attacker.UnforceStand()
 					ClearPlayerAnimViewEntity( attacker )
 					attacker.PlayerMelee_ExecutionEndAttacker()
-					DeployViewModelAndEnableWeapons( attacker )
+					// not using stack system for some buggy reason
+					//DeployViewModelAndEnableWeapons( attacker )
+					if ( IsAlive( attacker ) )
+						attacker.EnableWeaponViewModel()
+					attacker.Server_TurnOffhandWeaponsDisabledOff()
 				}
-				
 				else
 				{
-					attacker.DisableNPCFlag( NPC_IGNORE_ALL | NPC_DISABLE_SENSING )
 					EnableWeapons( attacker, [] )
-					attacker.SetActiveWeaponBySlot( 0 )
-					EnableTitanRodeo( attacker ) //Assuming everything went alright, re-enable rodeos on NPC Titans
+					//Highlight_ClearEnemyHighlight( attacker ) // this only resets victim's highlights for some reason
 				}
 
 				// changed for npc executions
@@ -3171,7 +3213,7 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 
 				entity attackerViewBodyProxy = Wallrun_CreateCopyOfPilotModel( attacker )
 				// use existing ownerProxy, don't create thirdPersonProxy, don't hide player
-				FirstPersonSequenceForce1P( attackerBodySequence, attacker, attacker, FORCE1P_PILOT_BODYTYPE, attackerViewBodyProxy, null, false, false )
+				FirstPersonSequenceForce1P( attackerSequence, attacker, attackerViewBody )
 				ScreenFadeFromBlack( attacker, 1.0, 0.5 ) // faking disembarking screen effect( bit longer so the sequence actually starts )
 			}
 			else // titan execution
@@ -3191,7 +3233,7 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 
 				entity targetViewBodyProxy = Wallrun_CreateCopyOfPilotModel( target )
 				// use existing ownerProxy, don't create thirdPersonProxy, don't hide player
-				FirstPersonSequenceForce1P( targetBodySequence, target, target, FORCE1P_PILOT_BODYTYPE, targetViewBodyProxy, null, false, false )
+				FirstPersonSequenceForce1P( targetSequence, target, targetViewBodyProxy )
 				ScreenFadeFromBlack( target, 1.0, 0.5 ) // faking disembarking screen effect( bit longer so the sequence actually starts )
 			}
 			else // titan execution
@@ -3947,6 +3989,36 @@ float function MeleeSyncedTitan_GetTitanExecutionStartTime( entity titan )
 		return -1 // invalid timer
 	
 	return file.titanExecutionStartTime[ titan ]
+}
+
+// modified: setup last used execution ref, so we can always get more random stuffs...
+// maybe, I mean maybe... npcs works better with a global value because they only have 1 life
+void function MeleeSyncedTitan_SetTitanLastUsedExecution( entity titan, string execution )
+{
+	if ( !( titan in file.titanLastExecutionUsed ) )
+		file.titanLastExecutionUsed[ titan ] <- ""
+	file.titanLastExecutionUsed[ titan ] = execution
+}
+
+void function MeleeSyncedTitan_SetTitanLastExecutedByRef( entity titan, string execution )
+{
+	if ( !( titan in file.titanLastExecutedBy ) )
+		file.titanLastExecutedBy[ titan ] <- ""
+	file.titanLastExecutedBy[ titan ] = execution
+}
+
+string function MeleeSyncedTitan_GetTitanLastUsedExecution( entity titan )
+{
+	if ( !( titan in file.titanLastExecutionUsed ) )
+		return ""
+	return file.titanLastExecutionUsed[ titan ]
+}
+
+string function MeleeSyncedTitan_GetTitanLastExecutedByRef( entity titan )
+{
+	if ( !( titan in file.titanLastExecutedBy ) )
+		return ""
+	return file.titanLastExecutedBy[ titan ]
 }
 ///////////////
 ///// END /////

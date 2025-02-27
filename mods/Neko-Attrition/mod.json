@@ -1,16 +1,10 @@
 {
 	"Name": "Neko's Attrition Extended Overhual",
-	"Description": "more titans?",
-	"Version": "1.2.8",
+	"Description": "Put Auto Titans In Attrition And Give Them The Ability To Execute Other Titans And This Is What You Get",
+	"Version": "1.2.9",
 	"LoadPriority": 10, // Add TitanFrameWork compatibility, add higher load priority to overwrite
 
 	"Dependencies": {
-		// Add TitanFrameWork compatibility
-		// https://northstar.thunderstore.io/package/The_Peepeepoopoo_man/Titanframework/
-		"EXTRA_SPAWNER_HAS_TITAN_FRAMEWORK": "Peepee.TitanFramework",
-		// Modded titan spawn support
-		"EXTRA_SPAWNER_HAS_BRUTE4": "Dinorush.Brute4",
-		"EXTRA_SPAWNER_HAS_ARCHON": "Moblin.Archon",
 		// Add HoloShift compatibility
 		// https://northstar.thunderstore.io/package/Legonzaur/HoloShift/
 		"EXTRA_SPAWNER_HAS_HOLOSHIFT": "Legonzaur.HoloShift"

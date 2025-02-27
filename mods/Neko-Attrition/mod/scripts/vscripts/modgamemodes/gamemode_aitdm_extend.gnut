@@ -1273,9 +1273,9 @@ string function GetBossTitanSpawnName( int team )
 			"ash",
 			"richter",
 			"viper",
-                        "viperbrute",
+            "viperbrute",
 			"slone",
-                        "slonearc",
+            "slonearc",
 		]
 		return imcBossList[ RandomInt( imcBossList.len() ) ]
 	}
@@ -1287,22 +1287,20 @@ string function GetBossTitanSpawnName( int team )
 		
 		const array<string> mltBossList =
 		[
-                        "david",
-                        "ilovepans",
-                        "neko_monarch",
-                        "neko_tone",
-                        "fs1041",
-                        "bt7274",
+            "david",
+            "ilovepans",
+            "fs1041",
+            "bt7274",
 			"neko",
-                        "jack",
+            "jack",
 			"sarah",
 			"sarah_monarch",
 			"gates",
 			"bear",
 			"lastimosa",
 			"anderson",
-                        "thunder",
-                        "saffron",
+            "thunder",
+            "saffron",
 		]
 		return mltBossList[ RandomInt( mltBossList.len() ) ]
 	}
