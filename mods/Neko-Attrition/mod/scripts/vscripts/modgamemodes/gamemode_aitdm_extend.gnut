@@ -1275,7 +1275,7 @@ string function GetBossTitanSpawnName( int team )
 			"viper",
             "viperbrute",
 			"slone",
-            "slonearc",
+            "slonearchon",
 		]
 		return imcBossList[ RandomInt( imcBossList.len() ) ]
 	}

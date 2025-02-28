@@ -1708,7 +1708,7 @@ void function InitDefaultTitanList()
 			// after being embarked by npcs
 			"npc_titan_atlas_stickybomb",					// embarkedAiSet
 			"behavior_titan",								// embarkedBehavior
-			"Arc titan",					// embarkedTitle
+			"Archon",					// embarkedTitle
 			NPCArcLoadout
 			// for prime titans, skin settings leave in loadout function
 		)
@@ -2223,13 +2223,13 @@ void function InitDefaultBossTitanList()
 	// slone
 	ExtraSpawner_RegisterToBossTitanSpawnList
 	(
-		"slonearc",										// spawn name. unique
-		"Slone",										// boss name
+		"slonearchon",										// spawn name. unique
+		"",										// boss name
 		"titan_atlas_stickybomb",						// setFile
 		"npc_titan_atlas_stickybomb",					// aiSet
 		"behavior_titan",								// titan behavior
 		"execution_ion",							// executionRef. was using execution_vanguard_kit beacuse npc ion can't use prime executions, now prime execution has been fixed by temporary taking away their laser core ;)
-		"#BOSSNAME_SLONE",								// boss title
+		"Slone Archon",								// boss title
 		"Slone",										// pilot title. can't use localized string
 		$"models/humans/pilots/pilot_medium_reaper_f.mdl",		// character model, use mp pilot model: pulse blade female
 		//BossLoadout_Generic_NoModelForMP, 				// generic loadout function for boss that has no pilot model for mp
@@ -2260,12 +2260,12 @@ void function InitDefaultBossTitanList()
 	ExtraSpawner_RegisterToBossTitanSpawnList
 	(
 		"viperbrute",										// spawn name. unique
-		"Viper",										// boss name
+		"",										// boss name
 		"titan_stryder_sniper",							// setFile
 		"npc_titan_stryder_sniper",						// aiSet
 		"behavior_titan_sniper",						// titan behavior
 		"execution_northstar",					// executionRef
-		"#BOSSNAME_VIPER",								// boss title
+		"Viper Brute",								// boss title
 		"Viper",										// pilot title. can't use localized string
 		$"models/humans/pilots/pilot_medium_reaper_m.mdl",		// character model, use mp pilot model: pulse blade male
 		//BossLoadout_Generic_NoModelForMP, 				// generic loadout function for boss that has no pilot model for mp
@@ -2490,11 +2490,11 @@ void function InitDefaultBossTitanList()
 		"npc_titan_atlas_vanguard",							// aiSet. was using npc_titan_buddy but it won't show health bar
 		"behavior_titan_long_range",					// titan behavior
 		"execution_vanguard_kit",									// executionRef
-		"NekoUwUGamerfnf",						// boss title
-		"NekoUwUGamerfnf",										// pilot title. can't use localized string
+		"Neko",						// boss title
+		"Neko",										// pilot title. can't use localized string
 		$"models/humans/pilots/pilot_medium_geist_m.mdl",
 		BossLoadout_Neko, 							// loadout function
-		138,												// skin index
+		-1,												// skin index
 		-1												// decal index
 	)
 
@@ -2520,7 +2520,7 @@ void function InitDefaultBossTitanList()
 	(
 		"fs1041",										// spawn name. unique
 		"",												// boss name. leave empty if this is not a valid boss titan
-		"titan_buddy_spare",									// setFile
+		"titan_buddy",									// setFile
 		"npc_titan_vanguard",							// aiSet. was using npc_titan_buddy but it won't show health bar
 		"behavior_titan_long_range",					// titan behavior
 		"execution_bt",									// executionRef
@@ -2604,7 +2604,7 @@ void function InitDefaultBossTitanList()
 	(
 		"anderson",										// spawn name. unique
 		"",												// boss name. leave empty if this is not a valid boss titan
-		"titan_buddy_spare",									// setFile
+		"titan_buddy",									// setFile
 		"npc_titan_vanguard",							// aiSet. was using npc_titan_buddy but it won't show health bar
 		"behavior_titan_long_range",					// titan behavior
 		"execution_bt",									// executionRef
@@ -3373,7 +3373,7 @@ void function BossLoadout_Neko( entity titan )
 	altBossLoadout_Generic( titan )
 
 	// re-assign weapons
-	TakeAllWeapons( titan )
+	//TakeAllWeapons( titan )
 
 	// re-assign weapons
 	titan.TakeWeaponNow( "mp_titanweapon_xo16_vanguard" ) // don't use a one-shot killing xo16!
@@ -3389,19 +3389,21 @@ void function BossLoadout_Neko( entity titan )
 	//titan.GetOffhandWeapon( OFFHAND_ORDNANCE ).AddMod( "upgradeCore_MissileRack_Vanguard" ) // fix mod: lock on heavy armor target only
 	titan.GiveOffhandWeapon( "mp_titanweapon_shoulder_rockets", OFFHAND_ORDNANCE )
 
-    titan.TakeOffhandWeapon( OFFHAND_ANTIRODEO )
-    titan.GiveOffhandWeapon( "mp_titanability_smoke", OFFHAND_ANTIRODEO )
+    //titan.TakeOffhandWeapon( OFFHAND_ANTIRODEO )
+    //titan.GiveOffhandWeapon( "mp_titanability_smoke", OFFHAND_ANTIRODEO )
 
-	titan.TakeOffhandWeapon( OFFHAND_SPECIAL )
-	titan.GiveOffhandWeapon( "mp_titanweapon_vortex_shield", OFFHAND_SPECIAL )
+	//titan.TakeOffhandWeapon( OFFHAND_SPECIAL )
+	//titan.GiveOffhandWeapon( "mp_titanweapon_vortex_shield", OFFHAND_SPECIAL )
 
-        titan.GetOffhandWeapon( OFFHAND_SPECIAL ).AddMod( "slow_recovery_vortex" ) // fix weapon mod
-	titan.GetOffhandWeapon( OFFHAND_SPECIAL ).AddMod( "pas_ion_vortex" ) // buffed boss loadout
+        //titan.GetOffhandWeapon( OFFHAND_SPECIAL ).AddMod( "slow_recovery_vortex" ) // fix weapon mod
+	//titan.GetOffhandWeapon( OFFHAND_SPECIAL ).AddMod( "pas_ion_vortex" ) // buffed boss loadout
 	titan.GetOffhandWeapon( OFFHAND_ORDNANCE ).AddMod( "upgradeCore_MissileRack_Vanguard" ) // fix mod: lock on heavy armor target only
 
 
 	titan.TakeOffhandWeapon( OFFHAND_EQUIPMENT )
 	titan.GiveOffhandWeapon( "mp_titancore_laser_cannon", OFFHAND_EQUIPMENT )
+	titan.SetSkin( 2 )
+	titan.SetCamo( 138 )
 	//NPCVanguard_UpgradeCore( titan )
 
 if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
@@ -3415,7 +3417,6 @@ void function BossLoadout_FS1041( entity titan )
 {
 	// game behavior settings
 	nopilotNPCVanguard_SetUpTitan( titan )
-
 	// welp, there's something way too weird: pilots can sometimes play their intro animation???? emitting to the dropship sound that everyone could hear
 	// happens after I adding holopilot and cloak ability for them. after disabling capability to attack, their animation went weird
 	// guess I'll remove all boss titan disembarking/ejecting case...
@@ -4481,7 +4482,6 @@ void function BossLoadout_Anderson( entity titan )
 {
 	// game behavior settings
 	altNPCVanguard_SetUpTitan( titan )
-
 	// below was previosly lastimosa's loadout
 	TakeAllWeapons( titan )
 	//Weapon

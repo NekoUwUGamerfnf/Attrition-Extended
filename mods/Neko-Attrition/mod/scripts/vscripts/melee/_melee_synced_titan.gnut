@@ -3207,19 +3207,12 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 		{
 			if ( IsValid( attackerViewBody ) )
 			{
-				// hide viewbody for attacker
-				attackerViewBody.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE & ~ENTITY_VISIBLE_TO_OWNER
-				attackerViewBody.SetOwner( attacker )
-
-				entity attackerViewBodyProxy = Wallrun_CreateCopyOfPilotModel( attacker )
-				// use existing ownerProxy, don't create thirdPersonProxy, don't hide player
-				FirstPersonSequenceForce1P( attackerSequence, attacker, attackerViewBody )
+				FirstPersonSequenceForce1P( attackerSequence, attacker )
 				ScreenFadeFromBlack( attacker, 1.0, 0.5 ) // faking disembarking screen effect( bit longer so the sequence actually starts )
 			}
 			else // titan execution
 			{
-				entity fakeFPSequenceTarget = isAttackerRef ? null : target
-				FirstPersonSequenceForce1P( attackerSequence, attacker, fakeFPSequenceTarget )
+				FirstPersonSequenceForce1P( attackerSequence, attacker )
 			}
 			RemoveCinematicFlag( attacker, CE_FLAG_EXECUTION ) // stop execution DOF
 		}
@@ -3227,19 +3220,12 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 		{
 			if ( IsValid( targetViewBody ) )
 			{
-				// hide viewbody for target
-				targetViewBody.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE & ~ENTITY_VISIBLE_TO_OWNER
-				targetViewBody.SetOwner( target )
-
-				entity targetViewBodyProxy = Wallrun_CreateCopyOfPilotModel( target )
-				// use existing ownerProxy, don't create thirdPersonProxy, don't hide player
-				FirstPersonSequenceForce1P( targetSequence, target, targetViewBodyProxy )
+				FirstPersonSequenceForce1P( targetSequence, target )
 				ScreenFadeFromBlack( target, 1.0, 0.5 ) // faking disembarking screen effect( bit longer so the sequence actually starts )
 			}
 			else // titan execution
 			{
-				entity fakeFPSequenceAttacker = isAttackerRef ? attacker : null // target is reversed: attacker handled by attackerRef
-				FirstPersonSequenceForce1P( targetSequence, target, fakeFPSequenceAttacker )
+				FirstPersonSequenceForce1P( targetSequence, target )
 			}
 			RemoveCinematicFlag( target, CE_FLAG_EXECUTION ) // stop execution DOF
 		}
