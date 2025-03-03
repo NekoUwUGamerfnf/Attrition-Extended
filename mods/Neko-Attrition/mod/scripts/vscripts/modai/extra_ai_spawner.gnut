@@ -1738,8 +1738,8 @@ void function NPCOgreTitanCoreReplace( entity titan )
 void function RandomTitanCamo( entity titan ) // picks a random camo then sets it on the titan to make it look like a player titan
 {
     // get random camo for auto titan
-	int randomtitancamo = RandomIntRange( 0, 159 ) // 159 is all camos
-	titan.SetSkin( 2 ) // titan color has skinIndex set to 2
+	int randomtitancamo = RandomIntRange( 0, 160 ) // 159 is all camos
+	titan.SetSkin( 2 ) // titan skin has a skinIndex of 2
 	titan.SetCamo( randomtitancamo ) // set camo to random
 }
 
