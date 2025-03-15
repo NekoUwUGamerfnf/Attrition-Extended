@@ -861,7 +861,7 @@ void function StalkerGearOverloads( entity npc, entity attacker = null )
 			if ( IsValid( fx ) )
 				fx.Destroy()
 
-			if ( IsAlive( npc ) )
+			if ( IsAlive( npc ) && IsValid( npc ) )
 			{
 				entity damageAttacker
 				if ( IsValid( attacker ) )
@@ -870,6 +870,7 @@ void function StalkerGearOverloads( entity npc, entity attacker = null )
 					damageAttacker = npc
 
 				vector force = GetDeathForce()
+				if ( IsAlive( npc ) && IsValid( npc ) )
 				npc.Die( damageAttacker, npc, { force = force, scriptType = DF_GIB, damageSourceId = eDamageSourceId.suicideSpectreAoE } )
 			}
 		}

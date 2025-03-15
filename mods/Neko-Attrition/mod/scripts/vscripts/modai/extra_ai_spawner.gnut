@@ -2210,7 +2210,7 @@ void function InitDefaultBossTitanList()
 		"titan_atlas_stickybomb",						// setFile
 		"npc_titan_atlas_stickybomb",					// aiSet
 		"behavior_titan",								// titan behavior
-		"execution_ion",							// executionRef. was using execution_vanguard_kit beacuse npc ion can't use prime executions, now prime execution has been fixed by temporary taking away their laser core ;)
+		"execution_random_0",							// executionRef. was using execution_vanguard_kit beacuse npc ion can't use prime executions, now prime execution has been fixed by temporary taking away their laser core ;)
 		"#BOSSNAME_SLONE",								// boss title
 		"Slone",										// pilot title. can't use localized string
 		$"models/humans/pilots/pilot_medium_reaper_f.mdl",		// character model, use mp pilot model: pulse blade female
@@ -2228,7 +2228,7 @@ void function InitDefaultBossTitanList()
 		"titan_atlas_stickybomb",						// setFile
 		"npc_titan_atlas_stickybomb",					// aiSet
 		"behavior_titan",								// titan behavior
-		"execution_ion",							// executionRef. was using execution_vanguard_kit beacuse npc ion can't use prime executions, now prime execution has been fixed by temporary taking away their laser core ;)
+		"execution_random_0",							// executionRef. was using execution_vanguard_kit beacuse npc ion can't use prime executions, now prime execution has been fixed by temporary taking away their laser core ;)
 		"Slone Archon",								// boss title
 		"Slone",										// pilot title. can't use localized string
 		$"models/humans/pilots/pilot_medium_reaper_f.mdl",		// character model, use mp pilot model: pulse blade female
@@ -2246,7 +2246,7 @@ void function InitDefaultBossTitanList()
 		"titan_ogre_meteor",							// setFile
 		"npc_titan_ogre_meteor",						// aiSet
 		"behavior_titan_ogre_meteor",					// titan behavior
-		"execution_scorch",						// executionRef
+		"execution_random_1",						// executionRef
 		"#BOSSNAME_KANE",								// boss title
 		"Kane",											// pilot title. can't use localized string
 		$"models/humans/pilots/pilot_medium_stalker_m.mdl",		// character model, use mp pilot model: holopilot male
@@ -2264,7 +2264,7 @@ void function InitDefaultBossTitanList()
 		"titan_stryder_sniper",							// setFile
 		"npc_titan_stryder_sniper",						// aiSet
 		"behavior_titan_sniper",						// titan behavior
-		"execution_northstar",					// executionRef
+		"execution_random_2",					// executionRef
 		"Viper Brute",								// boss title
 		"Viper",										// pilot title. can't use localized string
 		$"models/humans/pilots/pilot_medium_reaper_m.mdl",		// character model, use mp pilot model: pulse blade male
@@ -2282,7 +2282,7 @@ void function InitDefaultBossTitanList()
 		"titan_stryder_sniper",							// setFile
 		"npc_titan_stryder_sniper",						// aiSet
 		"behavior_titan_sniper",						// titan behavior
-		"execution_northstar",					// executionRef
+		"execution_random_2",					// executionRef
 		"#BOSSNAME_VIPER",								// boss title
 		"Viper",										// pilot title. can't use localized string
 		$"models/humans/pilots/pilot_medium_reaper_m.mdl",		// character model, use mp pilot model: pulse blade male
@@ -2303,7 +2303,7 @@ void function InitDefaultBossTitanList()
 		"titan_stryder_leadwall",						// setFile
 		"npc_titan_stryder_leadwall",					// aiSet
 		"behavior_titan_shotgun",						// titan behavior
-		"execution_ronin",						// executionRef
+		"execution_random_3",						// executionRef
 		"#BOSSNAME_ASH",								// boss title
 		"Ash",											// pilot title. can't use localized string
 		$"models/Humans/heroes/imc_hero_ash.mdl",		// character model
@@ -2322,7 +2322,7 @@ void function InitDefaultBossTitanList()
 		"titan_atlas_tracker",							// setFile
 		"npc_titan_atlas_tracker",						// aiSet
 		"behavior_titan_long_range",					// titan behavior
-		"execution_tone",							// executionRef
+		"execution_random_4",							// executionRef
 		"#BOSSNAME_RICHTER",							// boss title
 		"Richter",										// pilot title. can't use localized string
 		$"models/humans/pilots/pilot_heavy_drex_m.mdl",		// character model, use mp pilot model: cloak male
@@ -2343,7 +2343,7 @@ void function InitDefaultBossTitanList()
 		"titan_ogre_minigun",							// setFile
 		"npc_titan_ogre_minigun",						// aiSet
 		"behavior_titan_ogre_minigun",					// titan behavior
-		"execution_legion",						// executionRef
+		"execution_random_5",						// executionRef
 		"#BOSSNAME_BLISK",								// boss title
 		"Blisk",										// pilot title. can't use localized string
 		$"models/Humans/heroes/imc_hero_blisk.mdl",		// character model

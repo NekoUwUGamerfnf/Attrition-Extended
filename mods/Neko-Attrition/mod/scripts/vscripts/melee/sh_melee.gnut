@@ -1455,8 +1455,9 @@ SyncedMelee ornull function PickRandomExecution( array<SyncedMelee> syncedMelees
 
 		// player may have some executions locked
 		// modified: we can make a setting for modified executions, make them able to ignore unlocking progress
-		if ( attacker.IsPlayer() && !action.ignoreUnlockProgressChecks && IsItemLocked( attacker, action.ref ) )
-			continue
+		// I Disabled This Because There Is No Reason To Use This And It Crashes The Server
+		//if ( attacker.IsPlayer() && !action.ignoreUnlockProgressChecks && IsItemLocked( attacker, action.ref ) )
+			//continue
 
 		// if we have more than 1 execution to choose, don't repeatly using a same execution
 		if ( syncedMelees.len() > 1 && action.ref == lastExecution )
