@@ -1958,6 +1958,9 @@ entity function CreateNpcTitanPilotModel( entity titan )
 	asset modelName = GetNpcTitanPilotModel( titan )
 	//return CreatePropDynamic( modelName )
 	
+	if( modelName == $"" )
+ 	return
+
 	entity pilotModel = CreatePropDynamic( modelName )
 	//entity pilotModel = CreatePropDynamic( modelName, titan.GetAttachmentAngles( titan.LookupAttachment( "hijack" ) ) ) // spawn right under titan, won't have the model "flash" into titans.
 	// vanilla missing
@@ -1972,7 +1975,7 @@ entity function CreateNpcTitanPilotModel( entity titan )
 
 asset function GetNpcTitanPilotModel( entity titan )
 {
-	asset modelName = TEAM_IMC_GRUNT_MODEL
+	asset modelName = $""
 
 	#if HAS_BOSS_AI
 		if ( IsBossTitan( titan ) )
@@ -2762,6 +2765,13 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 	}
 	// END HACK FOR SP!!!
 
+	bool doLoadoutReplace = MeleeSyncedTitan_TitanShouldDoLoadoutReplaceForRef( attacker, executionRef )
+	if ( doLoadoutReplace )
+	{
+		//print( "attacker: " + string( attacker ) + " doing loadout replace for termination" )
+		MeleeSyncedTitan_RunLoadoutReplaceCallbackForRef( executionRef, attacker )
+	}
+
 	if ( !target.IsNPC() )
 	{
 		HolsterViewModelAndDisableWeapons( target )  //Melee anims need to use this to stop players from firing weapons but for the weapon to still show up in the 3p anims
@@ -2787,13 +2797,6 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 		attacker.EnableNPCFlag( NPC_IGNORE_ALL | NPC_DISABLE_SENSING )
 		ForceTitanRodeoToEnd( attacker )  //Anim event of disabling Rodeos on attacker like players does, does not happen to NPCs
 		DisableTitanRodeo( attacker )
-	}
-
-	bool doLoadoutReplace = MeleeSyncedTitan_TitanShouldDoLoadoutReplaceForRef( attacker, executionRef )
-	if ( doLoadoutReplace )
-	{
-		//print( "attacker: " + string( attacker ) + " doing loadout replace for termination" )
-		MeleeSyncedTitan_RunLoadoutReplaceCallbackForRef( executionRef, attacker )
 	}
 
 	//	attacker.SetInvulnerable()
