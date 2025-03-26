@@ -148,11 +148,11 @@ struct
 } file
 
 // we could've use SetHumanRagdollImpactTable() instead of handling this everywhere...
-//int RAGDOLL_IMPACT_TABLE_IDX = -1
+int RAGDOLL_IMPACT_TABLE_IDX = -1
 
 function MeleeSyncedTitan_Init()
 {
-	//RAGDOLL_IMPACT_TABLE_IDX = PrecacheImpactEffectTable( "ragdoll_human" )
+	RAGDOLL_IMPACT_TABLE_IDX = PrecacheImpactEffectTable( "ragdoll_human" )
 	AddSyncedMeleeServerThink( GetSyncedMeleeChooser( "titan", "titan" ), MeleeThread_TitanVsTitan )
 
 	if ( GetBugReproNum() == 129802 )
@@ -2673,27 +2673,33 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 		return
 
 	entity attackerSoul = attacker.GetTitanSoul()
-#if SP
+	#if SP
 	TitanLoadoutDef loadout = GetTitanLoadoutForCurrentMap()
 	string executionRef = loadout.titanExecution
 	TitanExcutionData data = file.executionData_3p[ executionRef ]
-#else
+	#else
 	TitanLoadoutDef loadout = attackerSoul.soul.titanLoadout // GetActiveTitanLoadout( attacker )
 	string executionRef = loadout.titanExecution
-	
-	// linked executions
-	array<string> linkedExecutions = MeleeSyncedTitan_GetLinkedExecutionsFromRef( executionRef ) // wrapped into this function!
-	if ( linkedExecutions.len() > 0 )
-		executionRef = linkedExecutions.getrandom() // this array is already a clone, can modify it directly
-	
 	TitanExcutionData data = file.executionData_3p[ executionRef ]
-#endif
-
-	// moving these checks to MeleeThread_TitanVsTitan_Internal(), so it can handle classic execution case
-	//bool shouldApplyBatteryAfterRodeo = false
-	string attackerType = GetSoulTitanSubClass( attackerSoul )
-
-	// get execution ref override
+	if ( data.linkedExecutions.len() > 0 )
+	{
+		array<string> clonedLinkedExecutions = clone data.linkedExecutions
+		for ( int i = clonedLinkedExecutions.len() - 1; i >= 0; i-- )
+		{
+			if ( GetItemRequiresPrime( clonedLinkedExecutions[ i ] ) == true && !HasPrimeToMatchExecutionType( attacker, GetItemType( clonedLinkedExecutions[ i ] ) ) )
+				clonedLinkedExecutions.remove( i )
+		}
+		executionRef = clonedLinkedExecutions.getrandom()
+		data = file.executionData_3p[ executionRef ]
+	}
+	#endif
+	bool shouldApplyBatteryAfterRodeo = false
+	if ( SoulHasPassive( attackerSoul, ePassives.PAS_VANGUARD_COREMETER ) )
+	{
+		executionRef = "execution_vanguard_kit"
+		data = file.executionData_3p[ executionRef ]
+		shouldApplyBatteryAfterRodeo = true
+	}
 	string overrideExecution = MeleeSyncedTitan_GetExecutionRefForTitanVsTitan3p( attacker, target, executionRef )
 	bool notUsingDefaultExecution = false
 	if ( executionRef != overrideExecution )
@@ -2704,25 +2710,10 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 		executionRef = overrideExecution
 		data = file.executionData_3p[ executionRef ]
 	}
-	//
 
-	// modified: setup last used execution ref, so we can always get more random stuffs...
 	MeleeSyncedTitan_SetTitanLastUsedExecution( attacker, executionRef )
 	MeleeSyncedTitan_SetTitanLastExecutedByRef( target, executionRef )
-
-	// modified: using passives for checking executions that rewards battery
-	// instead of hardcoding "execution_vanguard_kit"
-	// moving these checks to MeleeThread_TitanVsTitan_Internal(), so it can handle classic execution case
-	//if ( MeleeSyncedTitan_ShouldApplyBatteryAfterExecution( attacker ) )
-	//	shouldApplyBatteryAfterRodeo = true
-	
-	//print( "executionRef is: " + executionRef )
-	// modified: callbacks in sh_melee_synced_titan.gnut, callback for certain executionRef
-	// checks removed. we should always do callback
-	//if ( GetSoulUseExecutionCallback( attacker.GetTitanSoul() ) )
-	//	MeleeSyncedTitan_RunCallbacksForRef( executionRef, attacker, target )
 	MeleeSyncedTitan_RunCallbacksForRef( executionRef, attacker, target )
-	
 
 	string victimType = GetSoulTitanSubClass( target.GetTitanSoul() )
 
@@ -2740,87 +2731,73 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 	attackerSequence.noViewLerp = true
 
 	FirstPersonSequenceStruct targetSequence = clone attackerSequence
+
 	attackerSequence.thirdPersonAnim = data.attackerAnimation3p
-	
 	attackerSequence.firstPersonAnim = ""
 
 	if ( target.IsPlayer() )
 		targetSequence.firstPersonAnim = ""
 
 	targetSequence.thirdPersonAnim = data.targetAnimation3p[ victimType ]
-	
 	targetSequence.thirdPersonCameraEntity = target
 
 	target.e.syncedMeleeAttacker = attacker
 
-	// mp version handled in sh_melee_synced_titan.gnut, Execution_BT_KickShoot()
 	// HACK FOR SP!!!
 	e.replacedPrimary <- false
 	string xo16 = "mp_titanweapon_xo16_shorty"
-	array<entity> weapons = attacker.GetMainWeapons()
 	if ( IsSingleplayer() && attacker.IsPlayer() && data.attackerAnimation3p == "bt_synced_titan_execute_kickshoot_A" )
 	{
-		if ( weapons[0].GetWeaponClassName() != xo16 )
+		array<entity> weapons = attacker.GetMainWeapons()
+		if ( weapons.len() > 0 )
 		{
-			e.replacedPrimary = true
-			e.oldPrimary <- weapons[0].GetWeaponClassName()
-			attacker.SetActiveWeaponBySlot( 0 )
-			attacker.ReplaceActiveWeapon( xo16 ) //this assumes the active weapon is the weapon in slot 0 so we need to set active weapon to the one in slot 0
+			if ( weapons[0].GetWeaponClassName() != xo16 )
+			{
+				e.replacedPrimary = true
+				e.oldPrimary <- weapons[0].GetWeaponClassName()
+				attacker.SetActiveWeaponBySlot( 0 )
+				attacker.ReplaceActiveWeapon( xo16 ) //this assumes the active weapon is the weapon in slot 0 so we need to set active weapon to the one in slot 0
+			}
 		}
 	}
 	// END HACK FOR SP!!!
 
 	if ( !target.IsNPC() )
 	{
-		// this will sometimes make executions disable player's offhands forever idk why
-		//HolsterViewModelAndDisableWeapons( target )  //Melee anims need to use this to stop players from firing weapons but for the weapon to still show up in the 3p anims
-		target.DisableWeaponViewModel()
-		target.Server_TurnOffhandWeaponsDisabledOn()
+		HolsterViewModelAndDisableWeapons( target )  //Melee anims need to use this to stop players from firing weapons but for the weapon to still show up in the 3p anims
+		if ( attacker.IsNPC() ) //Defensive fix for the anim events not happening when the attacker is a NPC
+		{
+			ForceTitanRodeoToEnd( target )
+			DisableTitanRodeo( target )
+		}
 	}
 	else
+	{
+		target.EnableNPCFlag( NPC_IGNORE_ALL | NPC_DISABLE_SENSING )
 		DisableWeapons( target, [] )
+	}
 
-	// vanilla missing behavior: needs to stop npc animation, otherwise they can trigger animevents earlier than expected
-	// put here is to run before MeleeSyncedTitan_RunLoadoutReplaceCallbackForRef(), so we don't mess up that
-	// removed. this can sometimes cause issue and make attacker stop playing animation, also can't fix animevent issues
-	//if ( attacker.IsNPC() )
-	//	attacker.Anim_Stop()
+	if ( attacker.IsPlayer() )
+	{
+		HolsterViewModelAndDisableWeapons( attacker )  //Melee anims need to use this to stop players from firing weapons but for the weapon to still show up in the 3p anims
+		attacker.Anim_StopGesture( DEFAULT_SCRIPTED_ANIMATION_BLEND_TIME )
+	}
+	else
+	{
+		attacker.EnableNPCFlag( NPC_IGNORE_ALL | NPC_DISABLE_SENSING )
+		ForceTitanRodeoToEnd( attacker )  //Anim event of disabling Rodeos on attacker like players does, does not happen to NPCs
+		DisableTitanRodeo( attacker )
+	}
 
-	// modified: loadout replace think in sh_melee_synced_titan.gnut
-	// force attacker to use certain execution's weapon, to avoid visual issues
-	// this should also happen when player using random execution or have their execution replaced with best choice
-	// checks removed. we're now checking weapons to decide whether we do loadout replace or not
-	//bool doLoadoutReplace = GetSoulReplaceLoadoutOnExecution( attacker.GetTitanSoul() ) || notUsingDefaultExecution			
-
-	// if we don't have required weapons for execution, replace attacker loadout until it ends
-	// put here is to run before attacker.DisableWeaponViewModel(), so we can change their current holding weapon
 	bool doLoadoutReplace = MeleeSyncedTitan_TitanShouldDoLoadoutReplaceForRef( attacker, executionRef )
-	//print( "doLoadoutReplace: " + string( doLoadoutReplace ) )
 	if ( doLoadoutReplace )
 	{
 		//print( "attacker: " + string( attacker ) + " doing loadout replace for termination" )
 		MeleeSyncedTitan_RunLoadoutReplaceCallbackForRef( executionRef, attacker )
 	}
 
-	if ( attacker.IsPlayer() )
-	{
-		// this will sometimes make executions disable player's offhands forever idk why
-		//HolsterViewModelAndDisableWeapons( attacker )  //Melee anims need to use this to stop players from firing weapons but for the weapon to still show up in the 3p anims
-		attacker.DisableWeaponViewModel()
-		attacker.Server_TurnOffhandWeaponsDisabledOn()
-		
-		attacker.Anim_StopGesture( DEFAULT_SCRIPTED_ANIMATION_BLEND_TIME )
-	}
-
-	if ( target.IsPlayer() ) // vanilla missing! target should also stop gesture animation!
-		target.Anim_StopGesture( DEFAULT_SCRIPTED_ANIMATION_BLEND_TIME )
-	else // vanilla missing behavior: npc target can have scripted animation playing, needs to stop that
-		target.Anim_Stop()
-
 	//	attacker.SetInvulnerable()
 	target.SetInvulnerable()
-	// targets should be ignored while being executed
-	// breaks vanilla behavior but whatever
 	target.SetNoTarget( true )
 
 	entity targetViewBody
@@ -2828,18 +2805,8 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 	entity attackerViewBody
 	FirstPersonSequenceStruct attackerBodySequence
 
-	// reworked to use wrapped function
-	/*
 	bool titanHasPilot = target.IsPlayer()
-	#if HAS_BOSS_AI
-		titanHasPilot = titanHasPilot || ( IsBossTitan( target ) )
-	#elseif NPC_TITAN_PILOT_PROTOTYPE // modified condition
-		titanHasPilot = titanHasPilot || TitanHasNpcPilot( target )
-	#endif
-	*/
-	// also added attackerTitanHasPilot for npc execution case
-	bool attackerTitanHasPilot = MeleeSyncedTitan_TitanHasPilot( attacker )
-	bool targetTitanHasPilot = MeleeSyncedTitan_TitanHasPilot( target )
+	titanHasPilot = titanHasPilot || ( IsEliteTitan( target ) )
 
 	if ( attacker.IsPlayer() )
 	{
@@ -2851,89 +2818,80 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 		Remote_CallFunction_Replay( target, "SCB_StopTitanCockpitSounds" )
 	}
 
-	// adding attackerHasPilot checks
-	//if ( data.targetAnimation3pPilot[ victimType ] != "" && titanHasPilot )
-	if ( data.targetAnimation3pPilot[ victimType ] != "" && targetTitanHasPilot )
+	if ( data.targetAnimation3pPilot[ victimType ] != "" )
 	{
-		// MODIFIED here: wrap everything into function
-		targetViewBody = CreateTitanExecutionViewBody( target )
-
+		if ( target.IsNPC() )
+		{
+		    if ( target.GetTitanSoul().soul.seatedNpcPilot.isValid || IsEliteTitan( target ) )
+			targetViewBody = CreateNpcTitanPilotModel( target )
+		}
+		if ( target.IsPlayer() )
+		{
+			targetViewBody = Wallrun_CreateCopyOfPilotModel( target )
+		}
+		if ( IsValid( targetViewBody ) )
+		{
 		targetViewBody.SetOrigin( target.GetOrigin() )
-		//targetViewBody.SetRagdollImpactFX( RAGDOLL_IMPACT_TABLE_IDX )
-		SetHumanRagdollImpactTable( targetViewBody )
+		targetViewBody.SetRagdollImpactFX( RAGDOLL_IMPACT_TABLE_IDX )
 		targetViewBody.SetContinueAnimatingAfterRagdoll( true )
 
 		targetBodySequence.attachment = "ref"
-		// modified: attachment override
-		if ( victimType in data.targetAnimation3pPilotAttachment )
-			targetBodySequence.attachment = data.targetAnimation3pPilotAttachment[ victimType ]
-		//
 		targetBodySequence.teleport = true
 		targetBodySequence.thirdPersonAnim = data.targetAnimation3pPilot[ victimType ]
 
 		AddAnimEvent( targetViewBody, "pink_mist", MeleePinkMistFakeBody )
+		}
 	}
 
-	// modified for npc executions!
-	// adding attackerHasPilot checks
-	//if ( data.attackerAnimation3pPilot[ victimType ] != "" && attacker.IsPlayer() )
-	if ( data.attackerAnimation3pPilot[ victimType ] != "" && attackerTitanHasPilot )
+	if ( data.attackerAnimation3pPilot[ victimType ] != "" )
 	{
-		// MODIFIED here: wrap everything into function
-		attackerViewBody = CreateTitanExecutionViewBody( attacker )
-
+		if ( attacker.IsNPC() )
+		{
+		    if ( attacker.GetTitanSoul().soul.seatedNpcPilot.isValid || IsEliteTitan( attacker ) )
+			attackerViewBody = CreateNpcTitanPilotModel( attacker )
+		}
+		if ( attacker.IsPlayer() )
+		{
+			attackerViewBody = Wallrun_CreateCopyOfPilotModel( attacker )
+		}
+		if ( IsValid( attackerViewBody ) )
+		{
 		attackerViewBody.SetOrigin( attacker.GetOrigin() )
-		//attackerViewBody.SetRagdollImpactFX( RAGDOLL_IMPACT_TABLE_IDX )
-		SetHumanRagdollImpactTable( attackerViewBody )
+		attackerViewBody.SetRagdollImpactFX( RAGDOLL_IMPACT_TABLE_IDX )
 		attackerViewBody.SetContinueAnimatingAfterRagdoll( true )
 
 		attackerBodySequence.attachment = "ref"
 		attackerBodySequence.teleport = true
 		attackerBodySequence.thirdPersonAnim = data.attackerAnimation3pPilot[ victimType ]
+		}
 	}
 
 	if ( !IsValid( targetViewBody ) )
 	{
-		if( attackerSequence.thirdPersonAnim == data.attackerAnimation3p )
-			attackerSequence.thirdPersonAnim = data.attackerAnimation3p_vsAutoTitan
+		attackerSequence.thirdPersonAnim = data.attackerAnimation3p_vsAutoTitan
 	}
 
 	entity soul = target.GetTitanSoul()
 	soul.SetInvalidHealthBarEnt( true )
-	
-	// this isn't very accrate, won't pass the value modified below OnThreadEnd() scope is placed
+
 	bool isAttackerRef = false
 	if ( GetConVarBool( "melee_titan_execution_attacker_can_be_ref" ) )
 	{
 		isAttackerRef = IsAttackerRef( null, target )
 	}
 
-	// fix npc target animation for executions that has shorter attacker sequence than target's( monarch ones )
-	e.attackerSequenceEnds <- false
-
 	OnThreadEnd(
-		// moving shouldApplyBatteryAfterRodeo checks to MeleeThread_TitanVsTitan_Internal()
-		// so it can handle classic execution case
-		// and it's now using structs for saving a non-entity variable, more accurate
-		// pass data inside OnThreadEnd() to let us have more stuffs can get
-		//function() : ( attacker, target, e, attackerViewBody, targetViewBody, shouldApplyBatteryAfterRodeo, isAttackerRef )
-		function() : ( attacker, target, e, attackerViewBody, targetViewBody, isAttackerRef, data )
+		function() : ( attacker, target, e, attackerViewBody, targetViewBody, shouldApplyBatteryAfterRodeo, isAttackerRef )
 		{
 			if ( IsValid( attacker ) )
 			{
-				// wrapped anim event cleanup into function
-				/*
-				if( HasAnimEvent( attacker, "synced_melee_enable_planting" ) )
-					DeleteAnimEvent( attacker, "synced_melee_enable_planting" )
-				if( HasAnimEvent( attacker, "rocket_pod_fire_left" ) )
-					DeleteAnimEvent( attacker, "rocket_pod_fire_left" )
-				if( HasAnimEvent( attacker, "rocket_pod_fire_right" ) )
-					DeleteAnimEvent( attacker, "rocket_pod_fire_right" )
-				*/
-				// modified behavior start
-				CleanUpAttackerAnimEvents( attacker )
+			    if ( HasAnimEvent( attacker, "synced_melee_enable_planting" ) )
+				DeleteAnimEvent( attacker, "synced_melee_enable_planting" )
+				if ( HasAnimEvent( attacker, "rocket_pod_fire_left" ) )
+				DeleteAnimEvent( attacker, "rocket_pod_fire_left" )
+				if ( HasAnimEvent( attacker, "rocket_pod_fire_right" ) )
+				DeleteAnimEvent( attacker, "rocket_pod_fire_right" )
 
-				// save for npc executions
 				attacker.ClearParent()
 				ForceTitanSustainedDischargeEnd( attacker )
 				if( attacker.IsPlayer() )
@@ -2941,25 +2899,16 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 					attacker.UnforceStand()
 					ClearPlayerAnimViewEntity( attacker )
 					attacker.PlayerMelee_ExecutionEndAttacker()
-					// not using stack system for some buggy reason
-					//DeployViewModelAndEnableWeapons( attacker )
-					if ( IsAlive( attacker ) )
-						attacker.EnableWeaponViewModel()
-					attacker.Server_TurnOffhandWeaponsDisabledOff()
+					DeployViewModelAndEnableWeapons( attacker )
 				}
+				
 				else
 				{
+					attacker.DisableNPCFlag( NPC_IGNORE_ALL | NPC_DISABLE_SENSING )
 					EnableWeapons( attacker, [] )
-					//Highlight_ClearEnemyHighlight( attacker ) // this only resets victim's highlights for some reason
+					attacker.SetActiveWeaponBySlot( 0 )
+					EnableTitanRodeo( attacker ) //Assuming everything went alright, re-enable rodeos on NPC Titans
 				}
-
-				// changed for npc executions
-				//attacker.UnforceStand()
-				//attacker.ClearParent()
-				//ClearPlayerAnimViewEntity( attacker )
-				//attacker.PlayerMelee_ExecutionEndAttacker()
-				//ForceTitanSustainedDischargeEnd( attacker )
-				//DeployViewModelAndEnableWeapons( attacker ) //Melee anims need to use this to stop players from firing weapons but for the weapon to still show up in the 3p anims
 				
 				if ( IsAlive( attacker ) )
 				{
@@ -2974,19 +2923,14 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 
 					if ( attacker.IsTitan() )
 					{
-						// changed for npc executions
-						if( attacker.IsPlayer() )
+						if ( attacker.IsPlayer() )
 							Remote_CallFunction_Replay( attacker, "SCB_PlayTitanCockpitSounds" )
-
-						// moving these checks to MeleeThread_TitanVsTitan_Internal(), so it can handle classic execution case
-						/*
 						#if TITAN_EXECUTION_GIVES_BATTERY
 							Rodeo_GiveExecutingTitanABattery( attacker )
 						#else
 							if ( shouldApplyBatteryAfterRodeo )
 								Rodeo_GiveExecutingTitanABattery( attacker )
 						#endif
-						*/
 					}
 
 					if ( IsSingleplayer() )
@@ -3004,91 +2948,68 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 
 			}
 
-			// modified: if attacker sequence is shorter than target's, npc victim animation will be messed up
-			// seems only happen with monarch executions. player won't be ragdolled but also don't have weird animation sets
-			// in that case, target won't trigger AE_MELEE_KILLED but was killed by this script, might also miss other animevents such as predator_killed_ragdoll
-			// for handling that, we do some special checks, delay our cleanup
-			// note: to keep vanilla behavior, add a setting for toggling
-			
-			// EDIT: this is too much complicated, and player victim will have their CE flags out when death is delayed
-			// forceRagdoll fix is pretty good enough
+			if ( IsValid( target ) )
+			{
+			    if ( HasAnimEvent( target, "melee_killed_ragdoll" ) )
+				DeleteAnimEvent( target, "melee_killed_ragdoll" )
+				if ( HasAnimEvent( target, "execution_battery_show" ) )
+				DeleteAnimEvent( target, "execution_battery_show" )
+				if ( HasAnimEvent( target, "execution_battery_hide" ) )
+				DeleteAnimEvent( target, "execution_battery_hide" )
 
-			// attacker sequence ends but target still alive!!!
-			// EDIT: removing this think
-			/*
-			if ( file.enableTitanVsTitan3pTimerFix 
-				 && e.attackerSequenceEnds 
-				 && IsAlive( target ) && IsValid( attacker ) )
-			{
-				thread DelayedCleanUpTargetSyncedMelee( target, attacker, targetViewBody, isAttackerRef )
-			}
-			else // vanilla behavior
-			{
-			*/
-				// MODIFIED here: move all these stuffs to a wrapped function
-				// so we don't have to duplicate code in DelayedCleanUpTargetSyncedMelee()
-				if ( IsValid( target ) )
+
+				if ( HasAnimEvent( target, "rider_rodeo_over" ) )
+					DeleteAnimEvent( target, "rider_rodeo_over" )
+
+				target.e.syncedMeleeAttacker = null
+
+				target.ClearParent()
+				target.ClearInvulnerable()
+				if ( target.IsPlayer() )
 				{
-					CleanUpTargetSyncedMelee( target )
-
-					if ( IsAlive( target ) ) //Should have no need to PlayTitanCockpitSounds for target because the target is going to die
-					{
-						// modified: if attacker sequence is shorter than target's, npc victim animation will be messed up
-						// seems only happen with monarch executions. player won't be ragdolled but also don't have weird animation sets
-						// to keep both execution case identical, I'll use forceRagdollDeath for both
-						if ( e.attackerSequenceEnds )
-							target.e.forceRagdollDeath = true
-
-						target.Die( attacker, attacker, { scriptType = DF_KILLSHOT, damageSourceId = eDamageSourceId.titan_execution } )
-					}
-					else if ( target.IsPlayer() )
-					{
-						if ( isAttackerRef && IsValid( attacker ) )
-						{
-							PutEntityInSafeSpot( target, attacker, null, attacker.GetOrigin(), target.GetOrigin() )
-						}
-						else
-						{
-							PutEntityInSafeSpot( target, attacker, null, target.GetOrigin(), target.GetOrigin() )
-						}
-					}
+					ClearPlayerAnimViewEntity( target )
+					DeployViewModelAndEnableWeapons( target ) //Melee anims need to use this to stop players from firing weapons but for the weapon to still show up in the 3p anims
 				}
 
-				if ( IsValid( targetViewBody ) )
+				if ( !target.IsNPC() && target.ContextAction_IsMeleeExecution() )
+					target.PlayerMelee_ExecutionEndTarget()
+
+				if ( IsAlive( target ) ) //Should have no need to PlayTitanCockpitSounds for target because the target is going to die
 				{
-					targetViewBody.Hide()
-					targetViewBody.Destroy()
+					target.Die( attacker, attacker, { scriptType = DF_KILLSHOT, damageSourceId = eDamageSourceId.titan_execution } )
 				}
-			// EDIT: removing this think
-			/*
+				else if ( target.IsPlayer() )
+				{
+					if ( isAttackerRef && IsValid( attacker ) )
+					{
+						PutEntityInSafeSpot( target, attacker, null, attacker.GetOrigin(), target.GetOrigin() )
+					}
+					else
+					{
+						PutEntityInSafeSpot( target, attacker, null, target.GetOrigin(), target.GetOrigin() )
+					}
+				}
+				int attachID = target.LookupAttachment( "HEADFOCUS" )
+				vector explodeorigin = target.GetAttachmentOrigin( attachID )
+				PlayFX( $"xo_exp_death", explodeorigin ) //This is because many execution animations plays the sound but does not spawn the explosion particle FX
 			}
-			*/
 
 			if ( IsValid( attackerViewBody ) )
 			{
-				// anti-crash
 				//DeleteAnimEvent( attackerViewBody, "rodeo_battery_rip" )
-				// wrapped anim event cleanup into function
-				/*
-				if( HasAnimEvent( attackerViewBody, "execution_battery_pilot" ) )
-					DeleteAnimEvent( attackerViewBody, "execution_battery_pilot" )
-				if( HasAnimEvent( attackerViewBody, "execution_battery_pilot_jump_jets" ) )
-					DeleteAnimEvent( attackerViewBody, "execution_battery_pilot_jump_jets" )
-				*/
-				// modded behavior
-				CleanUpAttackerViewBodyAnimEvents( attackerViewBody )
+				if ( HasAnimEvent( attackerViewBody, "execution_battery_pilot" ) )
+				DeleteAnimEvent( attackerViewBody, "execution_battery_pilot" )
+				if ( HasAnimEvent( attackerViewBody, "execution_battery_pilot_jump_jets" ) )
+				DeleteAnimEvent( attackerViewBody, "execution_battery_pilot_jump_jets" )
 				attackerViewBody.Hide()
 				attackerViewBody.Destroy()
 			}
 
-			// moving this up for us handling modified execution timer
-			/*
 			if ( IsValid( targetViewBody ) )
 			{
 				targetViewBody.Hide()
 				targetViewBody.Destroy()
 			}
-			*/
 		}
 	)
 
@@ -3096,27 +3017,7 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 	entity bossPlayer = target.GetBossPlayer()
 	if ( IsValid( bossPlayer ) ) //Executing an auto-Titan, when the pilot disconnects it destroys the auto-titan creating weird circumstances.
 		bossPlayer.EndSignal( "OnDestroy" )
-	// modified stuffs here: npc victim being ragdoll will be destroyed on next frame
-	// to avoid that interrupts attacker animation, don't end think on npc target destroy could be better
-	//target.EndSignal( "OnDestroy" )
-	// add another signal on attacker for us tracking
-	// this breaks vanilla behavior, so make it a setting
-	if ( file.enableTitanVsTitan3pTimerFix )
-	{
-		attacker.EndSignal( "ForceEndTitanExecution" )
-		thread TrackTitanExecutionValidTime( attacker, target )
-	}
-	else // vanilla behavior
-		target.EndSignal( "OnDestroy" )
-
-	// fix for modified deathcam: player can respawn before attacker sequence ends, causes them being killed again, or cause PutEntityInSafeSpot() teleports attacker
-	// needs to end execution if target respawned
-	if ( target.IsPlayer() )
-	{
-		// make respawning cleans up execution
-		EndThreadOnPlayerRespawn( target )
-	}
-	//
+	target.EndSignal( "OnDestroy" )
 
 	if ( isAttackerRef )
 	{
@@ -3129,8 +3030,6 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 
 	EmitDifferentSoundsOnEntityForPlayerAndWorld( data.sound_1p, data.sound_3p, attacker, attacker )
 
-	// wrap anim event settings into function
-	/*
 	AddAnimEvent( target, "rider_rodeo_over", ForceTitanRodeoToEnd  )
 	AddAnimEvent( target, "melee_killed_ragdoll", PredatorMeleeKilledRagdoll )
 	AddAnimEvent( attacker, "synced_melee_enable_planting", EnablePlantingOnEntity )
@@ -3138,20 +3037,10 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 	AddAnimEvent( attacker, "rocket_pod_fire_right", Northstar_Rocket_Pod_Right, target )
 	AddAnimEvent( target, "execution_battery_show", Execution_ShowBattery )
 	AddAnimEvent( target, "execution_battery_hide", Execution_HideBattery )
-	*/
-	// modified behavior start
-	SetUpTargetAnimEvents( target )
-	SetUpAttackerAnimEvents( attacker, target )
-
 	if ( attackerViewBody != null )
 	{
-		// wrap anim event settings into function
-		/*
 		AddAnimEvent( attackerViewBody, "execution_battery_pilot", Execution_GivePilotBattery )
 		AddAnimEvent( attackerViewBody, "execution_battery_pilot_jump_jets", Execution_BatteryStealJumpJets )
-		*/
-		// modified behavior start
-		SetUpAttackerViewBodyAnimEvents( attackerViewBody, attacker )
 	}
 
 
@@ -3188,79 +3077,119 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 
 	target.SetAngles( targetAngles )
 
+	bool attackerDoing1PViewbodyAnim = false
+
 	if ( attackerViewBody != null )
 	{
+		attackerDoing1PViewbodyAnim = true
+	
 		attackerBodySequence.useAnimatedRefAttachment = true
+		
+		#if MP
+		// could use FirstPersonSequenceForce1P here, but since this uses a propdynamic rather than a player, easier to do it manually
+		if ( GetCurrentPlaylistVarInt( "fp_embark_enabled", 0 ) == 1 )
+		{
+			// hide from everyone else
+			attackerViewBody.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE & ~ENTITY_VISIBLE_TO_OWNER
+			attackerViewBody.SetOwner( attacker )
+			entity attackerViewBodyProxy
+		    if ( attacker.IsPlayer() )
+			{
+			entity attackerViewBodyProxy = Wallrun_CreateCopyOfPilotModel( attacker )
+			attackerViewBodyProxy.SetOrigin( attacker.GetOrigin() )
+			attackerViewBodyProxy.SetRagdollImpactFX( RAGDOLL_IMPACT_TABLE_IDX )
+			attackerViewBodyProxy.SetContinueAnimatingAfterRagdoll( true )
+			attackerViewBodyProxy.SetBodygroup( attackerViewBodyProxy.FindBodyGroup( "head" ), 1 )
+			attackerViewBodyProxy.SetOwner( attacker )
+			attackerViewBodyProxy.kv.VisibilityFlags = ENTITY_VISIBLE_TO_OWNER
+			
+			// create the viewpoint entity
+			entity camera = CreateEntity( "point_viewcontrol" )
+			camera.SetParent( attackerViewBodyProxy, FORCE1P_PILOT_1P_ATTACHMENT )
+			camera.kv.spawnflags = 56
+			DispatchSpawn( camera )
+			attacker.SetViewEntity( camera, false )
+			
+			Remote_CallFunction_NonReplay( attacker, "ServerCallback_HideHudForFPHackAnim" )
+			ScreenFadeFromBlack( attacker, 1.0, 0.5 )
+			thread Forced1PAttackerViewBodySequence( attackerBodySequence, attackerViewBodyProxy, attacker, camera )
+			}
+		}
+		#endif
+		
 		thread FirstPersonSequence( attackerBodySequence, attackerViewBody, attacker )
 	}
 
+	// to my knowledge this is never used in tf2, so not bothering to do anything for it
 	if ( targetViewBody != null )
 	{
 		targetBodySequence.useAnimatedRefAttachment = true
 		thread FirstPersonSequence( targetBodySequence, targetViewBody, target )
 	}
 
-	// Fake First person exeuction
-	if ( GetCurrentPlaylistVarInt( "fp_embark_enabled", 0 ) == 1 )
-	{
-		if ( attacker.IsPlayer() )
-		{
-			if ( IsValid( attackerViewBody ) )
-			{
-				FirstPersonSequenceForce1P( attackerSequence, attacker )
-				ScreenFadeFromBlack( attacker, 1.0, 0.5 ) // faking disembarking screen effect( bit longer so the sequence actually starts )
-			}
-			else // titan execution
-			{
-				FirstPersonSequenceForce1P( attackerSequence, attacker )
-			}
-			RemoveCinematicFlag( attacker, CE_FLAG_EXECUTION ) // stop execution DOF
-		}
-		if ( target.IsPlayer() )
-		{
-			if ( IsValid( targetViewBody ) )
-			{
-				FirstPersonSequenceForce1P( targetSequence, target )
-				ScreenFadeFromBlack( target, 1.0, 0.5 ) // faking disembarking screen effect( bit longer so the sequence actually starts )
-			}
-			else // titan execution
-			{
-				FirstPersonSequenceForce1P( targetSequence, target )
-			}
-			RemoveCinematicFlag( target, CE_FLAG_EXECUTION ) // stop execution DOF
-		}
-	}
-	//
-
-	// fix for executing npc target:
-	// some execution ragdolls target, but npc target gets ragdolled will count as "destroyed", ends execution unexpectly...
-	// better method is we end npc target execution manually on their death, for every execution ref
-	// so our execution timer can get more stable and minimapIcon won't be messed up
-	if ( file.endExecutionOnNPCTargetDeath && target.IsNPC() )
-		target.EndSignal( "OnDeath" )
-
 	if ( isAttackerRef )
 	{
+		#if MP
+		if ( GetCurrentPlaylistVarInt( "fp_embark_enabled", 0 ) == 1 )
+		{
+			if ( attacker.IsPlayer() && !attackerDoing1PViewbodyAnim )
+				FirstPersonSequenceForce1P( attackerSequence, attacker )
+				
+			if ( target.IsPlayer() )
+				FirstPersonSequenceForce1P( targetSequence, target, attacker )
+		}
+		#endif
+		
 		thread FirstPersonSequence( attackerSequence, attacker )
 		waitthread FirstPersonSequence( targetSequence, target, attacker )
 	}
 	else
 	{
-		// modified settings handle
-		string targetType = GetSoulTitanSubClass( soul )
-		// modified settings: we allow target sequence to force kill target on it's end
-		// basically for BT animations, they don't have AE_MELEE_KILLED for player titan to takedown them
-		bool trackTargetSequence = targetType in data.killTargetOnSequenceEnds && data.killTargetOnSequenceEnds[ targetType ]
-		
-		if ( trackTargetSequence )
-			thread TrackTargetSequenceEnd( attacker, target, targetSequence )
-		else // vanilla behavior
-			thread FirstPersonSequence( targetSequence, target )
+		#if MP
+		if ( GetCurrentPlaylistVarInt( "fp_embark_enabled", 0 ) == 1 )
+		{
+			if ( target.IsPlayer() )
+				FirstPersonSequenceForce1P( targetSequence, target )
+			
+			if ( attacker.IsPlayer() && !attackerDoing1PViewbodyAnim )
+				FirstPersonSequenceForce1P( attackerSequence, attacker, target )
+		}
+		#endif
+	
+		thread FirstPersonSequence( targetSequence, target )
 		waitthread FirstPersonSequence( attackerSequence, attacker, target )
 	}
+}
 
-	// if code hits here, we consider that attacker sequence has fully ends
-	e.attackerSequenceEnds = true
+bool function IsEliteTitan( entity titan )
+{
+	if ( titan.GetTeam() != TEAM_IMC )
+		return false
+
+	switch ( titan.ai.bossTitanType )
+	{
+		case TITAN_MERC:
+		case TITAN_BOSS:
+			return true
+	}
+
+	return false
+}
+
+void function Forced1PAttackerViewBodySequence( FirstPersonSequenceStruct attackerBodySequence, entity attackerViewBody, entity attacker, entity camera )
+{
+	attacker.EndSignal( "OnDestroy" )
+	attacker.EndSignal( "OnDeath" )
+	attacker.EndSignal( "OnAnimationDone" )
+	
+	OnThreadEnd( function() : ( attackerViewBody, attacker, camera )
+	{
+		attacker.ClearViewEntity()
+		camera.Destroy()
+		attackerViewBody.Destroy()
+	})
+
+	FirstPersonSequence( attackerBodySequence, attackerViewBody, attacker )
 }
 
 // modified function: signal "ForceEndTitanExecution" to end exection if target getting destroyed without dying
@@ -3519,6 +3448,9 @@ void function Execution_BatteryStealJumpJets( entity fakePilotModel )
 	entity titan = expect entity( GetOptionalAnimEventVar( fakePilotModel, "execution_battery_pilot_jump_jets" ) )
 	// useless misc fix here: if titan isn't a player, their pilot should be a npc...
 	// because npc's jump jet isn't handled by client-side, we also don't handle it on server-side
+	if( !IsValid( titan ) )
+	    return
+
 	if ( !titan.IsPlayer() )
 		return
 	
@@ -3615,10 +3547,6 @@ void function PredatorMeleeKilledRagdoll( entity titan )
 
 void function MeleePinkMistFakeBody( entity target )
 {
-	// clean up highlights before pinkmist, to fake that they're being killed
-	Highlight_ClearEnemyHighlight( target )
-	Highlight_ClearFriendlyHighlight( target )
-
 	target.Dissolve( ENTITY_DISSOLVE_PINKMIST, < 0, 0, 0 >, 0 )
 }
 
