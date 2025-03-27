@@ -191,7 +191,6 @@ void function InitBossTitanIntroData()
     introData.introAnimPilot 		= "" // temp replacement. mp don't have animation
     introData.pilotModelRemoved     = true // maybe do scripted model in extra function?
     introData.introExtraFunction    = KaneFight_BossFightIntro
-    */
 
     /////////////
 	/// Blisk ///
@@ -202,6 +201,7 @@ void function InitBossTitanIntroData()
     introData.introAnimTitan 		= "at_dismount_stand"
     introData.introAnimPilot 		= "pt_beacon_boss_intro"
     //introData.introExtraFunction    = 
+    */
 }
 
 // from sh_ai_boss_titan.gnut
@@ -886,6 +886,7 @@ void function AshFight_BossFightIntro( entity titan )
     titan.EnableNPCFlag( NPC_ALLOW_PATROL | NPC_ALLOW_INVESTIGATE | NPC_ALLOW_HAND_SIGNALS )
 
 	// Store off Ash's weapon and give it back later in the animation
+    WaitFrame()
 	entity weapon = titan.GetActiveWeapon()
 	array<string> mods = weapon.GetMods()
 	string weaponName = weapon.GetWeaponClassName()
@@ -902,6 +903,7 @@ void function AshFight_BossFightIntro( entity titan )
 
     // mp adding: want to hide pilot prop for a phase shift intro
     entity pilot = MpBossTitan_GetAnimationPilotProp( titan )
+    SetTeam( pilot, titan.GetTeam() )
     if ( IsValid( pilot ) )
         pilot.Hide()
 
@@ -912,9 +914,9 @@ void function AshFight_BossFightIntro( entity titan )
     WaitSignal( titan, "AshEnteredPhaseShift" )
 
 	PhaseShift( titan, 0, 1.5 )
-    // want to hide pilot prop for phase shift
+    // want to destroy pilot prop for phase shift
     if ( IsValid( pilot ) )
-        pilot.Hide()
+        pilot.Destroy()
 
 	wait 1.0
 
@@ -929,15 +931,68 @@ void function AshFight_BossFightIntro( entity titan )
 // WIP: add ViperCoreThink() from sp_s2s.nut
 void function ViperFight_BossFightIntro( entity titan )
 {
-    /*
     titan.WaitSignal( "DoCore" )
     bool firstTime = true
-    if ( GetPlayerArray_Alive().len() > 0 )
-        titan.SetEnemy( GetClosest( GetPlayerArray_Alive(), titan.GetOrigin() ) )
-    // defined in modweapons/titan_boss/sp_weapon_viperbossrockets_s2s.nut
-	//thread ViperCoreThink( titan, firstTime )
-    ViperCoreThink_Once( titan )
-    */
+	thread ViperCoreThink( titan, firstTime )
+}
+
+const float VIPERCOREMINAIMDIST = 2500
+void function ViperDoesCoreAnim( entity viper )
+{
+	viper.kv.allowshoot = false
+
+		entity ref = CreateScriptMover( viper.GetOrigin(), viper.GetAngles() )
+		thread PlayAnim( viper, "s2s_viper_flight_core", ref )//lt_npc_flight_core
+
+		float blendTime = 0.5
+		ref.NonPhysicsSetMoveModeLocal( true )
+		ref.NonPhysicsMoveTo( ref.GetLocalOrigin() + <0,0,4>, blendTime, blendTime * 0.5, blendTime * 0.5 )
+
+		wait blendTime
+
+		WaittillAnimDone( viper )
+		viper.ClearParent()
+		ref.Destroy()
+
+	viper.kv.allowshoot = true
+}
+
+void function ViperCoreVO( entity viper )
+{
+	wait 2.0
+}
+
+void function ViperCoreThink( entity viper, bool firstTime = false )
+{
+		//play anim
+		if ( !firstTime )
+		{
+			thread ViperDoesCoreAnim( viper )
+			thread ViperCoreVO( viper )
+		}
+
+		//play tell warning sound and fx
+		EmitSoundOnEntity( viper, "northstar_rocket_warning" )
+		float launchdelay = 1.5
+        const asset VIPER_CORE_EFFECT = $"P_titan_core_atlas_blast"
+		SetCoreEffect( viper, CreateCoreEffect, VIPER_CORE_EFFECT )
+		thread ViperKillCoreFx( viper, launchdelay + 1.0 )
+}
+
+void function ViperKillCoreFx( entity viper, float delay )
+{
+	viper.EndSignal( "OnDeath" )
+
+	OnThreadEnd(
+		function() : ( viper )
+			{
+				if ( IsValid( viper.GetTitanSoul() ) )
+					CleanupCoreEffect( viper.GetTitanSoul() )
+			}
+		)
+
+
+	wait delay
 }
 
 // WIP: do scripted prop think(use some animations similar, or use idle animation) and dialogue fix
@@ -963,6 +1018,7 @@ void function KaneFight_BossFightIntro( entity titan )
     entity militiaTitan = CreateNPCTitan( "npc_titan_atlas", 3, titan.GetOrigin(), titan.GetAngles() )
 	SetSpawnOption_AISettings( militiaTitan , "npc_titan_atlas_tracker" )
 	DispatchSpawn( militiaTitan )
+    SetTeam( militiaTitan, 3 )
 
 	militiaTitan.SetSkin( 2 ) // militia skin
 	militiaTitan.SetInvulnerable()
@@ -974,19 +1030,20 @@ void function KaneFight_BossFightIntro( entity titan )
 	DisableTitanRodeo( militiaTitan )
 	HideName( militiaTitan )
 
-    DoomTitan( militiaTitan ) // maybe just instant set it to doomed state bodygroup?
+    //DoomTitan( militiaTitan ) // maybe just instant set it to doomed state bodygroup?
 
     //militia:  origin < -4391.29, -6446.53, 3322 > angles < 0, -90, 0 >
 	//ref:      origin < -4658.18, -6594.47, 3322 > angles < 0, 0, 0 >
 	//kane:     origin < -4401.29, -6605.44, 3322 > angles < 0, 90, 0 >
     vector refPos = titan.GetOrigin()
     vector refAngles = titan.GetAngles()
-    refAngles.y = ClampAngle( refAngles.y + 180 )
+    refAngles.y = ClampAngle( refAngles.y )
     entity ref = CreateScriptRef( refPos, refAngles )
     thread PlayAnim( militiaTitan, "mt_Kane_boss_intro_mt", ref )
 
     // Spawn the militia pilot
 	entity pilot = CreatePropDynamic( $"models/humans/pilots/sp_medium_reaper_m.mdl", militiaTitan.GetOrigin(), militiaTitan.GetAngles(), 6, 20000 )
+    SetTeam( pilot, 3 )
 	thread PlayAnim( pilot, "pt_Kane_boss_intro_pilot", ref )
 
     WaitSignal( titan, "BossTitanIntroEnded" )

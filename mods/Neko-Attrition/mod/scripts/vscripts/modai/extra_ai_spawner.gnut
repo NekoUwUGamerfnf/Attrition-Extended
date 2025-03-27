@@ -148,6 +148,9 @@ global function ExtraSpawner_IsSquadFromExtraSpawner
 
 // debug
 const bool EXTRA_SPAWNER_DEBUG = false
+bool extra_spawn_admin = false
+bool neko_lvl3_admin = false
+bool hadGift_Admin = false
 
 // these consts are no need to change
 const asset CAREPACKAGE_MODEL = $"models/vehicle/escape_pod/escape_pod.mdl"
@@ -503,6 +506,12 @@ struct
 	table<entity, bool> soulEmbarkedNPCSpawnFromExtraSpawner
 	// npc velocity caculating
 	table<entity, vector> npcVelocity
+	array<string> extra_spawn_admin
+	string Extra_AdminStringLastVal
+	array<string> Neko_Admin_lvl3
+	string Neko_AdminStringLastVal_lvl3
+	array<string> Gift_Admin
+	string Gift_AdminStringLastVal
 } file
 
 void function ExtraAISpawner_Init()
@@ -651,13 +660,13 @@ void function ExtraAISpawner_Init()
 	AddDamageCallbackSourceID( damagedef_titan_step, RemoveGunshipTitanStepDamage )
 
 	// for debugging
-	#if EXTRA_SPAWNER_DEBUG
+	//#if EXTRA_SPAWNER_DEBUG
 		MeleeSyncedNPC_AllowNPCTitanExecutions( true )
 		MeleeSyncedNPC_AllowNPCPilotExecutions( true )
 		MeleeSyncedNPC_AllowNPCGruntExecutions( true )
 		MeleeSyncedNPC_AllowNPCSpectreExecutions( true )
 		MeleeSyncedNPC_AllowNPCPilotExecuteOtherNPCs( true ) // pilot models don't have syncedMeleeData initialized, so let them use mp pilot executions
-                MeleeSyncedNPC_AllowExecutingNPCPilot( true )
+        MeleeSyncedNPC_AllowExecutingNPCPilot( true )
 		
 		ExtraSpawner_SetNPCSecondaryWeapons( "npc_pilot_elite", ["mp_weapon_autopistol", "mp_weapon_semipistol"] )
 		ExtraSpawner_SetNPCAntiTitanWeapons( "npc_soldier", ["mp_weapon_defender"] )
@@ -671,13 +680,13 @@ void function ExtraAISpawner_Init()
 		AddClientCommandCallback( "gunship", CC_SpawnGunShip )
 		//AddClientCommandCallback( "assassinpilot", CC_SpawnAssassinPilot ) // shouldn't be used because we've removed npc_pilot_elite_assassin stuffs
 		AddClientCommandCallback( "specialistgrunt", CC_SpawnSpecialistGrunt )
-		AddClientCommandCallback( "pilot", CC_SpawnPilotElite )
+		AddClientCommandCallback( "pilotelite", CC_SpawnPilotElite )
 		AddClientCommandCallback( "bosstitan", CC_SpawnBossTitan )
 		AddClientCommandCallback( "bosstitan_intro", CC_SpawnBossTitanWithIntro )
 		AddClientCommandCallback( "pistolgrunt", CC_SpawnTestPistolGrunt )
 		AddClientCommandCallback( "gruntdroppod", CC_SpawnGruntDroppod )
 		AddClientCommandCallback( "overloadedstalkers", CC_SpawnOverloadedStalkers )
-	#endif // EXTRA_SPAWNER_DEBUG
+	//#endif // EXTRA_SPAWNER_DEBUG
 }
 
 // GENERIC SPAWN SETTINGS
@@ -1568,13 +1577,55 @@ void function InitDefaultNPCWeapons()
 
 void function InitDefaultTitanList()
 {
+		string ionsetfile = "titan_atlas_stickybomb"
+		string ionautotitanaiset = "npc_titan_auto_atlas_stickybomb"
+		if ( RandomInt( 2 ) < 1 )
+        {
+		ionsetfile = "titan_atlas_ion_prime"
+		ionautotitanaiset = "npc_titan_auto_atlas_ion_prime"
+		}
+		string scorchsetfile = "titan_ogre_meteor"
+		string scorchautotitanaiset = "npc_titan_auto_ogre_meteor"
+		if ( RandomInt( 2 ) < 1 )
+        {
+		scorchsetfile = "titan_ogre_scorch_prime"
+		scorchautotitanaiset = "npc_titan_auto_ogre_scorch_prime"
+		}
+		string northstarsetfile = "titan_stryder_sniper"
+		string northstarautotitanaiset = "npc_titan_auto_stryder_sniper"
+		if ( RandomInt( 2 ) < 1 )
+        {
+		northstarsetfile = "titan_stryder_northstar_prime"
+		northstarautotitanaiset = "npc_titan_auto_stryder_northstar_prime"
+		}
+		string roninsetfile = "titan_stryder_leadwall"
+		string roninautotitanaiset = "npc_titan_auto_stryder_leadwall"
+		if ( RandomInt( 2 ) < 1 )
+        {
+		roninsetfile = "titan_stryder_ronin_prime"
+		roninautotitanaiset = "npc_titan_auto_stryder_ronin_prime"
+		}
+		string tonesetfile = "titan_atlas_tracker"
+		string toneautotitanaiset = "npc_titan_auto_atlas_tracker"
+		if ( RandomInt( 2 ) < 1 )
+        {
+		tonesetfile = "titan_atlas_tone_prime"
+	    toneautotitanaiset = "npc_titan_auto_atlas_tone_prime"
+		}
+		string legionsetfile = "titan_ogre_minigun"
+		string legionautotitanaiset = "npc_titan_auto_ogre_minigun"
+		if ( RandomInt( 2 ) < 1 )
+        {
+		legionsetfile = "titan_ogre_legion_prime"
+		legionautotitanaiset = "npc_titan_auto_ogre_legion_prime"
+		}
 	// ion
 	ExtraSpawner_RegisterToTitanSpawnList
 	(
 		"ion",											// spawn name. unique
-		"titan_atlas_stickybomb",						// setFile
-		"npc_titan_auto_atlas_stickybomb",				// aiSet
-		"execution_ion",								// executionRef
+		ionsetfile,						// setFile
+		ionautotitanaiset,				// aiSet
+		"execution_random_0",								// executionRef
 		// after being embarked by npcs
 		"npc_titan_atlas_stickybomb",					// embarkedAiSet
 		"behavior_titan",								// embarkedBehavior
@@ -1588,9 +1639,9 @@ void function InitDefaultTitanList()
 	ExtraSpawner_RegisterToTitanSpawnList
 	(
 		"scorch",										// spawn name. unique
-		"titan_ogre_meteor",							// setFile
-		"npc_titan_auto_ogre_meteor",					// aiSet
-		"execution_scorch",								// executionRef, prime execution leave for modded titans
+		scorchsetfile,							// setFile
+		scorchautotitanaiset,					// aiSet
+		"execution_random_1",								// executionRef, prime execution leave for modded titans
 		// after being embarked by npcs
 		"npc_titan_ogre_meteor",						// embarkedAiSet
 		"behavior_titan_ogre_meteor",					// embarkedBehavior
@@ -1604,9 +1655,9 @@ void function InitDefaultTitanList()
 	ExtraSpawner_RegisterToTitanSpawnList
 	(
 		"northstar",									// spawn name. unique
-		"titan_stryder_sniper",							// setFile
-		"npc_titan_auto_stryder_sniper",				// aiSet
-		"execution_northstar",							// executionRef, prime execution leave for modded titans
+		northstarsetfile,							// setFile
+		northstarautotitanaiset,				// aiSet
+		"execution_random_2",							// executionRef, prime execution leave for modded titans
 		// after being embarked by npcs
 		"npc_titan_stryder_sniper",						// embarkedAiSet
 		"behavior_titan_sniper",						// embarkedBehavior
@@ -1620,9 +1671,9 @@ void function InitDefaultTitanList()
 	ExtraSpawner_RegisterToTitanSpawnList
 	(
 		"ronin",										// spawn name. unique
-		"titan_stryder_leadwall",						// setFile
-		"npc_titan_auto_stryder_leadwall",				// aiSet
-		"execution_ronin",								// executionRef, prime execution leave for modded titans
+		roninsetfile,						// setFile
+		roninautotitanaiset,				// aiSet
+		"execution_random_3",								// executionRef, prime execution leave for modded titans
 		// after being embarked by npcs
 		"npc_titan_stryder_leadwall",					// embarkedAiSet
 		"behavior_titan_shotgun",						// embarkedBehavior
@@ -1636,9 +1687,9 @@ void function InitDefaultTitanList()
 	ExtraSpawner_RegisterToTitanSpawnList
 	(
 		"tone",											// spawn name. unique
-		"titan_atlas_tracker",							// setFile
-		"npc_titan_auto_atlas_tracker",					// aiSet
-		"execution_tone",								// executionRef, prime execution leave for modded titans
+		tonesetfile,							// setFile
+		toneautotitanaiset,					// aiSet
+		"execution_random_4",								// executionRef, prime execution leave for modded titans
 		// after being embarked by npcs
 		"npc_titan_atlas_tracker",						// embarkedAiSet
 		"behavior_titan_long_range",					// embarkedBehavior
@@ -1652,9 +1703,9 @@ void function InitDefaultTitanList()
 	ExtraSpawner_RegisterToTitanSpawnList
 	(
 		"legion",										// spawn name. unique
-		"titan_ogre_minigun",							// setFile
-		"npc_titan_auto_ogre_minigun",					// aiSet
-		"execution_legion",								// executionRef, prime execution leave for modded titans
+		legionsetfile,							// setFile
+		legionautotitanaiset,					// aiSet
+		"execution_random_5",								// executionRef, prime execution leave for modded titans
 		// after being embarked by npcs
 		"npc_titan_ogre_minigun",						// embarkedAiSet
 		"behavior_titan_ogre_minigun",					// embarkedBehavior
@@ -1685,13 +1736,13 @@ void function InitDefaultTitanList()
 		ExtraSpawner_RegisterToTitanSpawnList
 		(
 			"brute",										// spawn name. unique
-			"titan_stryder_sniper",							// setFile
-			"npc_titan_auto_stryder_sniper",				// aiSet, rocketeer stryder don't have a autotitan aiSet
-			"execution_northstar",					// executionRef, this one don't require weapons
+			northstarsetfile,							// setFile
+			northstarautotitanaiset,				// aiSet, rocketeer stryder doesn't have a autotitan aiSet
+			"execution_random_2",					// executionRef, this one don't require weapons
 			// after being embarked by npcs
 			"npc_titan_stryder_rocketeer",					// embarkedAiSet
 			"behavior_titan_rocketeer",						// embarkedBehavior
-			"Brute",					// embarkedTitle
+			"#NPC_TITAN_STRYDER_ROCKET",					// embarkedTitle
 			NPCBruteLoadout,								// loadout function
 			-1,												// imc team skinIndex
 			-1												// mlt team skinIndex
@@ -1702,13 +1753,13 @@ void function InitDefaultTitanList()
 		ExtraSpawner_RegisterToTitanSpawnList
 		(
 			"archon_modded",								// spawn name. unique
-			"titan_atlas_stickybomb",						// setFile
-			"npc_titan_auto_atlas_stickybomb",				// aiSet
-			"execution_ion",							
+			ionsetfile,						// setFile
+			ionautotitanaiset,				// aiSet
+			"execution_random_0",							
 			// after being embarked by npcs
 			"npc_titan_atlas_stickybomb",					// embarkedAiSet
 			"behavior_titan",								// embarkedBehavior
-			"Archon",					// embarkedTitle
+			"Archon",					// embarkedTitle Archon Doesn't Have An #NPC_TITAN Name
 			NPCArcLoadout
 			// for prime titans, skin settings leave in loadout function
 		)
@@ -1733,6 +1784,15 @@ void function NPCOgreTitanCoreReplace( entity titan )
 {
 	titan.TakeOffhandWeapon( OFFHAND_EQUIPMENT )
 	titan.GiveOffhandWeapon( "mp_titancore_flame_wave", OFFHAND_EQUIPMENT )
+}
+
+void function AegisUpgradeHp( entity titan )
+{
+	if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
+	{
+	titan.SetMaxHealth( titan.GetMaxHealth() + 2500 )
+	titan.SetHealth( titan.GetMaxHealth() )
+	}
 }
 
 void function RandomTitanCamo( entity titan ) // picks a random camo then sets it on the titan to make it look like a player titan
@@ -1801,36 +1861,16 @@ void function NPCPrimeTitanCamoSetup( entity titan )
 void function NPCNorthstarLoadout( entity titan )
 {
 RandomTitan( titan )
-if ( RandomInt( 2 ) < 1 )
-{
-titan.SetModel( $"models/titans/light/titan_light_northstar_prime.mdl" )
-entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_random_2"
-}
 RandomTitanCamo( titan )
-if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
-{
-titan.SetMaxHealth(10000)
-titan.SetHealth(10000)
-}
+AegisUpgradeHp( titan )
 }
 
 void function NPCRoninLoadout( entity titan )
 {
 RandomTitan( titan )
 RandomRoninSwordCore( titan )
-if ( RandomInt( 2 ) < 1 )
-{
-titan.SetModel( $"models/titans/light/titan_light_ronin_prime.mdl" )
-entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_random_3"
-}
 RandomTitanCamo( titan )
-if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
-{
-titan.SetMaxHealth(10000)
-titan.SetHealth(10000)
-}
+AegisUpgradeHp( titan )
 }
 
 void function NPCIonLoadout( entity titan )
@@ -1838,69 +1878,30 @@ void function NPCIonLoadout( entity titan )
 entity soul = titan.GetTitanSoul()
 GivePassive( soul, ePassives.PAS_ION_VORTEX )
 RandomTitan( titan )
-if ( RandomInt( 2 ) < 1 )
-{
-titan.SetModel( $"models/titans/medium/titan_medium_ion_prime.mdl" )
-soul.soul.titanLoadout.titanExecution = "execution_random_0"
-}
 RandomTitanCamo( titan )
-if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
-{
-titan.SetMaxHealth(12500)
-titan.SetHealth(12500)
-}
+AegisUpgradeHp( titan )
 }
 
 void function NPCScorchLoadout( entity titan )
 {
 RandomTitan( titan )
 RandomScorchFlameCore( titan )
-if ( RandomInt( 2 ) < 1 )
-{
-titan.SetModel( $"models/titans/heavy/titan_heavy_scorch_prime.mdl" )
-entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_random_1"
-}
 RandomTitanCamo( titan )
-if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
-{
-titan.SetMaxHealth(15000)
-titan.SetHealth(15000)
-}
+AegisUpgradeHp( titan )
 }
 
 void function NPCToneLoadout( entity titan )
 {
 RandomTitan( titan )
-if ( RandomInt( 2 ) < 1 )
-{
-titan.SetModel( $"models/titans/medium/titan_medium_tone_prime.mdl" )
-entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_random_4"
-}
 RandomTitanCamo( titan )
-if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
-{
-titan.SetMaxHealth(12500)
-titan.SetHealth(12500)
-}
+AegisUpgradeHp( titan )
 }
 
 void function NPCLegionLoadout( entity titan )
 {
 RandomTitan( titan )
-if ( RandomInt( 2 ) < 1 )
-{
-titan.SetModel( $"models/titans/heavy/titan_heavy_legion_prime.mdl" )
-entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_random_5"
-}
 RandomTitanCamo( titan )
-if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
-{
-titan.SetMaxHealth(15000)
-titan.SetHealth(15000)
-}
+AegisUpgradeHp( titan )
 }
 
 void function NPCMonarchLoadout( entity titan )
@@ -1922,23 +1923,12 @@ if ( RandomInt( 100 ) < 35 && !SoulHasPassive( soul, ePassives.PAS_VANGUARD_CORE
 GivePassive( soul, ePassives.PAS_VANGUARD_DOOM )
 }
 RandomTitanCamo( titan )
-if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
-{
-titan.SetMaxHealth(12500)
-titan.SetHealth(12500)
-}
+AegisUpgradeHp( titan )
 }
 
 void function NPCBruteLoadout( entity titan )
 {
 RandomTitan( titan )
-if ( RandomInt( 2 ) < 1 )
-{
-titan.SetModel( $"models/titans/light/titan_light_northstar_prime.mdl" )
-entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_random_2"
-NPCPrimeTitanCamoSetup( titan )
-}
 	TakeAllWeapons( titan )
 	//Weapon
 	titan.GiveWeapon( "mp_titanweapon_rocketeer_rocketstream" )
@@ -1950,42 +1940,19 @@ NPCPrimeTitanCamoSetup( titan )
 	// we've removed npc vanguard expedition loadout, add multi-targeting missile for brute?
 	// adding this is also because we don't have "brute_rocket"'s projectile speed buff for quad rocket, assigning a better ordnance could be good?
 	titan.GiveOffhandWeapon( "mp_titanweapon_shoulder_rockets", OFFHAND_ORDNANCE, ["upgradeCore_MissileRack_Vanguard"] ) // fix mod: lock on heavy armor target only
-	//titan.GiveOffhandWeapon( "mp_titanweapon_dumbfire_rockets", OFFHAND_ORDNANCE )
-	//titan.GiveOffhandWeapon( "mp_titanweapon_salvo_rockets", OFFHAND_ORDNANCE, ["missile_racks"] )
 	//Titan Core
 	titan.GiveOffhandWeapon( "mp_titancore_flight_core", OFFHAND_EQUIPMENT )
 	//Melee
 	titan.GiveOffhandWeapon( "melee_titan_punch_northstar", OFFHAND_MELEE )
 
-	//titan.SetBehaviorSelector( "behavior_titan_rocketeer" ) // default behavior, being set after embarking
-	// title should be setup by npc pilot's spawn func
-	//titan.SetTitle( "Brute" )
-
-	entity soul = titan.GetTitanSoul()
-	//if ( IsValid( soul ) )
-	//	MeleeSyncedTitan_SetSoulShouldReplaceLoadoutOnExecution( soul, true ) // required for executions behave nicely
-
-	// camo for prime titans
-	//NPCPrimeTitanCamoSetup( titan )
 	RandomTitanCamo( titan )
-if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
-{
-titan.SetMaxHealth(10000)
-titan.SetHealth(10000)
-}
+AegisUpgradeHp( titan )
 }
 
 // adding archon support
 void function NPCArcLoadout( entity titan )
 {
 RandomTitan( titan )
-if ( RandomInt( 2 ) < 1 )
-{
-titan.SetModel( $"models/titans/medium/titan_medium_ion_prime.mdl" )
-entity soul = titan.GetTitanSoul()
-soul.soul.titanLoadout.titanExecution = "execution_random_0"
-NPCPrimeTitanCamoSetup( titan )
-}
 
 	TakeAllWeapons( titan )
 	//Weapon
@@ -2001,20 +1968,8 @@ NPCPrimeTitanCamoSetup( titan )
 	titan.GiveOffhandWeapon( "mp_titancore_laser_cannon", OFFHAND_EQUIPMENT )
 	//Melee
 	titan.GiveOffhandWeapon( "melee_titan_punch_ion", OFFHAND_MELEE )
-
-	// setup executions
-	entity soul = titan.GetTitanSoul()
-	//if ( IsValid( soul ) )
-		//MeleeSyncedTitan_SetSoulShouldReplaceLoadoutOnExecution( soul, true ) // required for executions behave nicely
-
-	// camo for prime titans
-	//NPCPrimeTitanCamoSetup( titan )
 	RandomTitanCamo( titan )
-if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
-{
-titan.SetMaxHealth(12500)
-titan.SetHealth(12500)
-}
+    AegisUpgradeHp( titan )
 }
 
 void function FakePlayerScoreEventForNPCKilled( entity victim, entity attacker, var damageInfo )
@@ -2507,7 +2462,7 @@ void function InitDefaultBossTitanList()
 		"npc_titan_vanguard",							// aiSet. was using npc_titan_buddy but it won't show health bar
 		"behavior_titan_long_range",					// titan behavior
 		"execution_bt",									// executionRef
-		"BT-7274",						// boss title
+		"#NPC_BT_NAME",						// boss title
 		"BT-7274",										// pilot title. can't use localized string
 		$"models/humans/pilots/pilot_medium_geist_m.mdl",
 		BossLoadout_BT7274, 							// loadout function
@@ -2524,7 +2479,7 @@ void function InitDefaultBossTitanList()
 		"npc_titan_vanguard",							// aiSet. was using npc_titan_buddy but it won't show health bar
 		"behavior_titan_long_range",					// titan behavior
 		"execution_bt",									// executionRef
-		"FS-1041",						// boss title
+		"#NPC_BT_SPARE_NAME",						// boss title
 		"FS-1041",										// pilot title. can't use localized string
 		$"models/humans/pilots/pilot_medium_geist_m.mdl",
 		BossLoadout_FS1041, 							// loadout function
@@ -2909,11 +2864,7 @@ void function BossLoadout_Ion( entity titan )
 
 	// add kits those are useful for a npc
 	FullNPCKitsIonLoadout( titan )
-if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
-{
-titan.SetMaxHealth(12500)
-titan.SetHealth(12500)
-}
+AegisUpgradeHp( titan )
 }
 
 void function FullNPCKitsIonLoadout( entity titan )
@@ -2939,11 +2890,7 @@ void function BossLoadout_Tone( entity titan )
 
 	// add kits those are useful for a npc
 	FullNPCKitsToneLoadout( titan )
-if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
-{
-titan.SetMaxHealth(12500)
-titan.SetHealth(12500)
-}
+AegisUpgradeHp( titan )
 }
 
 void function FullNPCKitsToneLoadout( entity titan )
@@ -2968,11 +2915,7 @@ void function BossLoadout_Legion( entity titan )
 
 	// add kits those are useful for a npc
 	FullNPCKitsLegionLoadout( titan )
-if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
-{
-titan.SetMaxHealth(15000)
-titan.SetHealth(15000)
-}
+AegisUpgradeHp( titan )
 }
 
 void function FullNPCKitsLegionLoadout( entity titan )
@@ -2997,11 +2940,7 @@ void function BossLoadout_Scorch( entity titan )
 
 	// add kits those are useful for a npc
 	FullNPCKitsScorchLoadout( titan )
-if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
-{
-titan.SetMaxHealth(15000)
-titan.SetHealth(15000)
-}
+AegisUpgradeHp( titan )
 }
 
 void function RandomScorchFlameCore( entity titan )
@@ -3047,11 +2986,7 @@ void function BossLoadout_Ronin( entity titan )
 
 	// add kits those are useful for a npc
 	FullNPCKitsRoninLoadout( titan )
-if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
-{
-titan.SetMaxHealth(10000)
-titan.SetHealth(10000)
-}
+AegisUpgradeHp( titan )
 }
 
 void function FullNPCKitsRoninLoadout( entity titan )
@@ -3080,11 +3015,7 @@ void function BossLoadout_Northstar( entity titan )
 
 	// add kits those are useful for a npc
 	FullNPCKitsNorthstarLoadout( titan )
-if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
-{
-titan.SetMaxHealth(10000)
-titan.SetHealth(10000)
-}
+AegisUpgradeHp( titan )
 }
 
 void function FullNPCKitsNorthstarLoadout( entity titan )
@@ -3204,11 +3135,7 @@ void function davidloadout( entity titan )
      titan.GiveWeapon( "mp_titanweapon_particle_accelerator" )
 
      titan.GiveOffhandWeapon( "mp_titancore_laser_cannon", OFFHAND_EQUIPMENT )
-if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
-{
-titan.SetMaxHealth(12500)
-titan.SetHealth(12500)
-}
+AegisUpgradeHp( titan )
 }
 
 void function Ilovepansloadout( entity titan )
@@ -3249,11 +3176,7 @@ titan.GiveWeapon( "mp_titanweapon_arc_cannon" )
 titan.GiveOffhandWeapon( "mp_titanweapon_shoulder_rockets", OFFHAND_ORDNANCE )
 titan.GiveOffhandWeapon( "mp_titanweapon_vortex_shield", OFFHAND_SPECIAL )
 titan.GiveOffhandWeapon( "mp_titanability_phase_dash", OFFHAND_ANTIRODEO )
-if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
-{
-titan.SetMaxHealth(12500)
-titan.SetHealth(12500)
-}
+AegisUpgradeHp( titan )
 }
 
 void function BossLoadout_Arc( entity titan )
@@ -3274,12 +3197,7 @@ TakeAllWeapons( titan )
 	//Melee
 	titan.GiveOffhandWeapon( "melee_titan_punch_ion", OFFHAND_MELEE )
 
-if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
-{
-titan.SetMaxHealth(12500)
-titan.SetHealth(12500)
-}
-
+AegisUpgradeHp( titan )
 }
 
 void function BossLoadout_Brute( entity titan )
@@ -3311,11 +3229,7 @@ void function BossLoadout_Brute( entity titan )
 	//if ( IsValid( soul ) )
 	//	MeleeSyncedTitan_SetSoulShouldReplaceLoadoutOnExecution( soul, true ) // required for executions behave nicely
 
-if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
-{
-titan.SetMaxHealth(10000)
-titan.SetHealth(10000)
-}
+AegisUpgradeHp( titan )
 }
 
 void function nopilotNPCVanguard_SetUpTitan( entity titan, bool replacePilot = false )
@@ -3406,11 +3320,7 @@ void function BossLoadout_Neko( entity titan )
 	titan.SetCamo( 138 )
 	//NPCVanguard_UpgradeCore( titan )
 
-if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
-{
-titan.SetMaxHealth(12500)
-titan.SetHealth(12500)
-}
+AegisUpgradeHp( titan )
 }
 
 void function BossLoadout_FS1041( entity titan )
@@ -3615,11 +3525,7 @@ void function BossLoadout_SarahMonarch( entity titan )
 		GivePassive( soul, ePassives.PAS_VANGUARD_CORE2 ) // missile racks
 		GivePassive( soul, ePassives.PAS_SCORCH_SHIELD )
 	}
-if(GetCurrentPlaylistVarInt("aegis_upgrades", 0) == 1)
-{
-titan.SetMaxHealth(12500)
-titan.SetHealth(12500)
-}
+AegisUpgradeHp( titan )
 }
 
 // NPC vanguard loadouts, hardcoded!
@@ -3802,8 +3708,8 @@ void function InitNPCVanguardLoadouts()
 
         NPCVanguardPilot NekoPilot = clone emptyPilot
         NekoPilot.pilotName = "Neko"
-	NekoPilot.titanTitle = "NekoUwUGamerfnf"
-	NekoPilot.pilotTitle = "NekoUwUGamerfnf"
+	NekoPilot.titanTitle = "Neko"
+	NekoPilot.pilotTitle = "Neko"
 	NekoPilot.pilotModel = $"models/humans/pilots/pilot_medium_geist_m.mdl"
 	file.npcVanguardPilots.append( NekoPilot )
 
@@ -4960,7 +4866,63 @@ bool function ExtraSpawner_StopDefaultSquadHandler( string squadname )
 
 //------------------------------------------------------
 // for debugging
+
+void function Update_AdminList()
+{
+#if EXTRA_SPAWNER_HAS_NEKOADMIN
+    string lvl3 = GetConVarString( "neko_grant_admin_lvl3" )
+
+	file.Neko_Admin_lvl3 = split( lvl3, "," )
+	foreach ( string admin in file.Neko_Admin_lvl3 )
+		StringReplace( admin, " ", "" )
+#endif
+#if EXTRA_SPAWNER_HAS_KARMAADMIN
+	string cvar = GetConVarString( "grant_admin" )
+
+	file.Gift_Admin = split( cvar, "," )
+	foreach ( string admin in file.Gift_Admin )
+		StringReplace( admin, " ", "" )
+#endif
+    string admin = GetConVarString( "extra_spawn_admin" )
+
+	file.extra_spawn_admin = split( admin, "," )
+	foreach ( string admin in file.extra_spawn_admin )
+		StringReplace( admin, " ", "" )
+
+return
+}
+
+void function CheckExtraSpawnerAdmin( entity player )
+{
+Update_AdminList()
+#if EXTRA_SPAWNER_HAS_NEKOADMIN
+if ( file.Neko_Admin_lvl3.contains( player.GetUID() )  )
+{
+neko_lvl3_admin = true
+}
+#endif
+#if EXTRA_SPAWNER_HAS_KARMAADMIN
+if ( file.Gift_Admin.contains( player.GetUID() )  )
+{
+hadGift_Admin = true
+}
+#endif
+
+    if ( file.extra_spawn_admin.contains( player.GetUID() )  )
+    {
+    extra_spawn_admin = true
+    }
+
+return
+}
+
 bool function CC_KillAllNPCsFromExtraSpawner( entity player, array<string> args )
+{
+extra_spawn_admin = false
+neko_lvl3_admin = false
+hadGift_Admin = false
+CheckExtraSpawnerAdmin( player )
+if ( extra_spawn_admin == true || neko_lvl3_admin == true || hadGift_Admin == true )
 {
 	foreach ( entity npc, bool spawnFrom in file.npcSpawnFromExtraSpawner )
 	{
@@ -4970,9 +4932,17 @@ bool function CC_KillAllNPCsFromExtraSpawner( entity player, array<string> args 
 
 	return true
 }
+return true
+}
 
 bool function CC_SpawnPilotAndTitan( entity player, array<string> args )
 {   
+extra_spawn_admin = false
+neko_lvl3_admin = false
+hadGift_Admin = false
+CheckExtraSpawnerAdmin( player )
+if ( extra_spawn_admin == true || neko_lvl3_admin == true || hadGift_Admin == true )
+{
 	string spawnName = ""
 	if ( args.len() > 0 )
 		spawnName = args[0]
@@ -4982,8 +4952,16 @@ bool function CC_SpawnPilotAndTitan( entity player, array<string> args )
 	thread ExtraSpawner_SpawnPilotCanEmbark( dropPoint.origin, dropPoint.angles, GetPlayerAISpawnTeam( player, args, 1 ), spawnName )
 	return true
 }
+return true
+}
 
 bool function CC_SpawnTitanWithPilot( entity player, array<string> args )
+{
+extra_spawn_admin = false
+neko_lvl3_admin = false
+hadGift_Admin = false
+CheckExtraSpawnerAdmin( player )
+if ( extra_spawn_admin == true || neko_lvl3_admin == true || hadGift_Admin == true )
 {
 	string spawnName = ""
 	if ( args.len() > 0 )
@@ -4994,9 +4972,17 @@ bool function CC_SpawnTitanWithPilot( entity player, array<string> args )
 	thread ExtraSpawner_SpawnTitanWithPilot( dropPoint.origin, dropPoint.angles, GetPlayerAISpawnTeam( player, args, 1 ), spawnName )
 	return true
 }
+return true
+}
 
 bool function CC_SpawnGruntAndTitan( entity player, array<string> args )
-{   
+{
+extra_spawn_admin = false
+neko_lvl3_admin = false
+hadGift_Admin = false
+CheckExtraSpawnerAdmin( player )
+if ( extra_spawn_admin == true || neko_lvl3_admin == true || hadGift_Admin == true )
+{
 	string aiSet = "npc_soldier_drone_summoner"
 	string spawnName = ""
 	if ( args.len() > 0 )
@@ -5008,8 +4994,16 @@ bool function CC_SpawnGruntAndTitan( entity player, array<string> args )
 	thread ExtraSpawner_SpawnSpecialistGruntCanEmbark( dropPoint.origin, dropPoint.angles, GetPlayerAISpawnTeam( player, args, 1 ), aiSet, 350, spawnName )
 	return true
 }
+return true
+}
 
 bool function CC_SpawnTitanWithGrunt( entity player, array<string> args )
+{
+extra_spawn_admin = false
+neko_lvl3_admin = false
+hadGift_Admin = false
+CheckExtraSpawnerAdmin( player )
+if ( extra_spawn_admin == true || neko_lvl3_admin == true || hadGift_Admin == true )
 {
 	string aiSet = "npc_soldier_drone_summoner"
 	string spawnName = ""
@@ -5022,24 +5016,48 @@ bool function CC_SpawnTitanWithGrunt( entity player, array<string> args )
 	thread ExtraSpawner_SpawnTitanWithSpecialistGrunt( dropPoint.origin, dropPoint.angles, GetPlayerAISpawnTeam( player, args, 1 ), aiSet, 350, spawnName )
 	return true
 }
+return true
+}
 
 bool function CC_SpawnReaperCanLaunchTicks( entity player, array<string> args )
+{
+extra_spawn_admin = false
+neko_lvl3_admin = false
+hadGift_Admin = false
+CheckExtraSpawnerAdmin( player )
+if ( extra_spawn_admin == true || neko_lvl3_admin == true || hadGift_Admin == true )
 {
 	Point dropPoint = GetTitanReplacementPoint( player )
     thread ExtraSpawner_SpawnReaperCanLaunchTicks( dropPoint.origin, dropPoint.angles, GetPlayerAISpawnTeam( player, args ) )
     return true
 }
+return true
+}
 
 bool function CC_SpawnGunShip( entity player, array<string> args )
+{
+extra_spawn_admin = false
+neko_lvl3_admin = false
+hadGift_Admin = false
+CheckExtraSpawnerAdmin( player )
+if ( extra_spawn_admin == true || neko_lvl3_admin == true || hadGift_Admin == true )
 {
 	Point dropPoint = GetTitanReplacementPoint( player )
     thread ExtraSpawner_SpawnGunShip( dropPoint.origin, dropPoint.angles, GetPlayerAISpawnTeam( player, args ) )
     return true
 }
+return true
+}
 
 // shouldn't be used because we've removed npc_pilot_elite_assassin stuffs
 /*
 bool function CC_SpawnAssassinPilot( entity player, array<string> args )
+{
+extra_spawn_admin = false
+neko_lvl3_admin = false
+hadGift_Admin = false
+CheckExtraSpawnerAdmin( player )
+if ( extra_spawn_admin == true || neko_lvl3_admin == true || hadGift_Admin == true )
 {
 	vector pos = GetPlayerCrosshairOrigin( player )
 	vector playerAngs = player.EyeAngles()
@@ -5059,9 +5077,17 @@ bool function CC_SpawnAssassinPilot( entity player, array<string> args )
 
 	return true
 }
+return true
+}
 */
 
 bool function CC_SpawnSpecialistGrunt( entity player, array<string> args )
+{
+extra_spawn_admin = false
+neko_lvl3_admin = false
+hadGift_Admin = false
+CheckExtraSpawnerAdmin( player )
+if ( extra_spawn_admin == true || neko_lvl3_admin == true || hadGift_Admin == true )
 {
 	vector pos = GetPlayerCrosshairOrigin( player )
 	vector playerAngs = player.EyeAngles()
@@ -5077,9 +5103,17 @@ bool function CC_SpawnSpecialistGrunt( entity player, array<string> args )
 
 	return true
 }
+return true
+}
 
 bool function CC_SpawnPilotElite( entity player, array<string> args )
-{   
+{
+extra_spawn_admin = false
+neko_lvl3_admin = false
+hadGift_Admin = false
+CheckExtraSpawnerAdmin( player )
+if ( extra_spawn_admin == true || neko_lvl3_admin == true || hadGift_Admin == true )
+{
 	vector pos = GetPlayerCrosshairOrigin( player )
 	vector playerAngs = player.EyeAngles()
 	vector rot = < 0, ClampAngle( playerAngs.y - 180 ), 0 >
@@ -5092,8 +5126,16 @@ bool function CC_SpawnPilotElite( entity player, array<string> args )
 	//pilot.GiveWeapon( "mp_weapon_hemlok" )
 	return true
 }
+return true
+}
 
 bool function CC_SpawnBossTitan( entity player, array<string> args )
+{
+extra_spawn_admin = false
+neko_lvl3_admin = false
+hadGift_Admin = false
+CheckExtraSpawnerAdmin( player )
+if ( extra_spawn_admin == true || neko_lvl3_admin == true || hadGift_Admin == true )
 {
 	if ( args.len() == 0 )
 		return true
@@ -5108,10 +5150,17 @@ bool function CC_SpawnBossTitan( entity player, array<string> args )
 
 	return true
 }
+return true
+}
 
 bool function CC_SpawnBossTitanWithIntro( entity player, array<string> args )
 {
-
+extra_spawn_admin = false
+neko_lvl3_admin = false
+hadGift_Admin = false
+CheckExtraSpawnerAdmin( player )
+if ( extra_spawn_admin == true || neko_lvl3_admin == true || hadGift_Admin == true )
+{
 	vector pos = GetPlayerCrosshairOrigin( player )
 	vector playerAngs = player.EyeAngles()
 	vector rot = < 0, ClampAngle( playerAngs.y - 180 ), 0 >
@@ -5122,8 +5171,16 @@ bool function CC_SpawnBossTitanWithIntro( entity player, array<string> args )
 
 	return true
 }
+return true
+}
 
 bool function CC_SpawnTestPistolGrunt( entity player, array<string> args )
+{
+extra_spawn_admin = false
+neko_lvl3_admin = false
+hadGift_Admin = false
+CheckExtraSpawnerAdmin( player )
+if ( extra_spawn_admin == true || neko_lvl3_admin == true || hadGift_Admin == true )
 {
 	vector pos = GetPlayerCrosshairOrigin( player )
 	vector playerAngs = player.EyeAngles()
@@ -5149,8 +5206,16 @@ bool function CC_SpawnTestPistolGrunt( entity player, array<string> args )
 
 	return true
 }
+return true
+}
 
 bool function CC_SpawnGruntDroppod( entity player, array<string> args )
+{
+extra_spawn_admin = false
+neko_lvl3_admin = false
+hadGift_Admin = false
+CheckExtraSpawnerAdmin( player )
+if ( extra_spawn_admin == true || neko_lvl3_admin == true || hadGift_Admin == true )
 {
 	vector pos = GetPlayerCrosshairOrigin( player ) - < 0, 0, 40 > // needs offset for droppod landing
 	vector playerAngs = player.EyeAngles()
@@ -5160,8 +5225,16 @@ bool function CC_SpawnGruntDroppod( entity player, array<string> args )
 
 	return true
 }
+return true
+}
 
 bool function CC_SpawnOverloadedStalkers( entity player, array<string> args )
+{
+extra_spawn_admin = false
+neko_lvl3_admin = false
+hadGift_Admin = false
+CheckExtraSpawnerAdmin( player )
+if ( extra_spawn_admin == true || neko_lvl3_admin == true || hadGift_Admin == true )
 {
 	vector pos = GetPlayerCrosshairOrigin( player ) - < 0, 0, 40 > // needs offset for droppod landing
 	vector playerAngs = player.EyeAngles()
@@ -5169,6 +5242,8 @@ bool function CC_SpawnOverloadedStalkers( entity player, array<string> args )
 
 	thread ExtraSpawner_SpawnOverloadedStalkerDropPod( pos, rot, GetPlayerAISpawnTeam( player, args ) )
 	return true
+}
+return true
 }
 
 // utility
@@ -12461,7 +12536,7 @@ void function ExtraSpawner_SpawnReaperCanLaunchTicks( vector pos, vector rot, in
 
 void function ExtraSpawner_SetUpNukeDeathReaper( entity reaper )
 {
-if ( RandomInt( 100 ) < 10 ) // Random Chance Because Reapers Nuke Every Time Is Annoying
+if ( RandomInt( 100 ) < 10 ) // Random Chance Because Reapers Nuking Every Time Is Annoying
 {
 	// use modified functions in _ai_superspectre.gnut, extremely powerful reaper: they do nuke on death
 	SuperSpectre_AddNukeDeath( reaper ) // force this reaper to nuke on death without having to change aisettings
@@ -12490,14 +12565,13 @@ if ( RandomInt( 100 ) < 10 ) // Random Chance Because Reapers Nuke Every Time Is
 		50000,			// explosion force
 		DF_RAGDOLL | DF_EXPLOSION			// script damage flags
 	)
-
+}
 	// tick spawn
 	SuperSpectre_SetSpawnerTickExplodeOnOwnerDeath( reaper, true ) // clean up their ticks using a modified way
 	//SuperSpectre_SetSpawnerTickMaxCount( reaper, 8 ) // spawn 8 ticks per reaper
 
 	// visual misc
 	SuperSpectre_SetDoBodyGroupUpdateOnDamage( reaper, true ) // vanilla removed feature turns to settings: update bodygroup to doomed state( like MP titans ) if taking enough damage
-}
 }
 
 void function ExtraSpawner_ReaperTickLaunchThink( entity reaper, string tickType )

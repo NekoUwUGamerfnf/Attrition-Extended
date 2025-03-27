@@ -261,10 +261,13 @@ void function NpcPilotRunsToEmbarkTitan( entity pilot, entity titan, embarkSet =
 	//waitthread RunToAnimStartForced_Deprecated( pilot, pilotAnim, titan, "hijack" )
 	// also, allowing to choose thread or don't
 	// mostly we should never use waitthread...
-	if ( waitthreadFunc )
-		waitthread RunToAnimStartForced_Deprecated( pilot, pilotAnim, titan, "hijack", true, true )
-	else
-		thread RunToAnimStartForced_Deprecated( pilot, pilotAnim, titan, "hijack", true, true )
+	NPCFollowsNPC( pilot, titan )
+	
+	//if ( waitthreadFunc ) Don't Use RunToAnimStartForced_Deprecated Use NPCFollowsNPC As Its Way Better Than This
+		//waitthread RunToAnimStartForced_Deprecated( pilot, pilotAnim, titan, "hijack", true, true )
+	//else
+		//thread RunToAnimStartForced_Deprecated( pilot, pilotAnim, titan, "hijack", true, true )
+	
 }
 
 // modified function
@@ -390,6 +393,11 @@ function NpcPilotEmbarksTitan( entity pilot, entity titan )
 	sequence.thirdPersonAnim = GetAnimFromAlias( titanSubClass, embarkSet.animSet.thirdPersonKneelingAlias )
 	//local pilotAnim = GetAnimFromAlias( titanSubClass, embarkSet.animSet.thirdPersonKneelingAlias )
 	local titanAnim = embarkSet.animSet.titanKneelingAnim
+	if ( titan.GetTitanSoul().GetStance() > STANCE_STANDING )
+	{
+	sequence.thirdPersonAnim = GetAnimFromAlias( titanSubClass, embarkSet.animSet.thirdPersonStandingAlias )
+	titanAnim = embarkSet.animSet.titanStandingAnim
+	}
 
 	if ( !titan.ContextAction_IsActive() && !titan.ContextAction_IsBusy() ) //might be set from kneeling
 		titan.ContextAction_SetBusy()
@@ -877,7 +885,7 @@ void function NpcPilotSetPetTitan( entity pilot, entity titan )
 	pilot.s.petTitan = titan
 	// respawn missing: update titan title
 	if ( pilot.GetTitle() != "" ) // update titan title
-		titan.SetTitle( pilot.GetTitle() + " 's Auto-Titan" )
+		titan.SetTitle( pilot.GetTitle() + "'s Auto-Titan" ) // Remove Space
 	
 	pilot.Signal( "PetTitanUpdated" )
 }
