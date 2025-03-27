@@ -4869,12 +4869,23 @@ bool function ExtraSpawner_StopDefaultSquadHandler( string squadname )
 
 void function Update_AdminList()
 {
+file.extra_spawn_admin = split( "admin", "," )
+file.Neko_Admin_lvl3 = split( "admin", "," )
+file.Gift_Admin = split( "admin", "," )
+    string admin = GetConVarString( "extra_spawn_admin" )
+
+	file.extra_spawn_admin = split( admin, "," )
+	foreach ( string admin in file.extra_spawn_admin )
+		StringReplace( admin, " ", "" )
+	if( admin != "" )
+	return
 #if EXTRA_SPAWNER_HAS_NEKOADMIN
     string lvl3 = GetConVarString( "neko_grant_admin_lvl3" )
 
 	file.Neko_Admin_lvl3 = split( lvl3, "," )
 	foreach ( string admin in file.Neko_Admin_lvl3 )
 		StringReplace( admin, " ", "" )
+	return
 #endif
 #if EXTRA_SPAWNER_HAS_KARMAADMIN
 	string cvar = GetConVarString( "grant_admin" )
@@ -4882,12 +4893,8 @@ void function Update_AdminList()
 	file.Gift_Admin = split( cvar, "," )
 	foreach ( string admin in file.Gift_Admin )
 		StringReplace( admin, " ", "" )
+	return
 #endif
-    string admin = GetConVarString( "extra_spawn_admin" )
-
-	file.extra_spawn_admin = split( admin, "," )
-	foreach ( string admin in file.extra_spawn_admin )
-		StringReplace( admin, " ", "" )
 
 return
 }
@@ -4895,6 +4902,10 @@ return
 void function CheckExtraSpawnerAdmin( entity player )
 {
 Update_AdminList()
+if ( file.extra_spawn_admin.contains( player.GetUID() )  )
+{
+extra_spawn_admin = true
+}
 #if EXTRA_SPAWNER_HAS_NEKOADMIN
 if ( file.Neko_Admin_lvl3.contains( player.GetUID() )  )
 {
@@ -4907,11 +4918,6 @@ if ( file.Gift_Admin.contains( player.GetUID() )  )
 hadGift_Admin = true
 }
 #endif
-
-    if ( file.extra_spawn_admin.contains( player.GetUID() )  )
-    {
-    extra_spawn_admin = true
-    }
 
 return
 }

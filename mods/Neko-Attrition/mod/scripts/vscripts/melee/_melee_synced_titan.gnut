@@ -416,6 +416,18 @@ bool function MeleeThread_TitanVsTitan_Internal( SyncedMelee action, entity atta
 
 	if ( !IsAlive( target ) )
 		return false
+	
+	if( !target.IsPlayer() )
+	{
+	if ( target.ContextAction_IsBusy() )
+	    return false
+	}
+
+	if( !attacker.IsPlayer() )
+	{
+	if ( attacker.ContextAction_IsBusy() )
+	    return false
+	}
 
 	void functionref( SyncedMelee action, entity attacker, entity target ) func
 	func = GetTitanSyncedMeleeFunc( attacker, target )
@@ -431,6 +443,18 @@ bool function MeleeThread_TitanVsTitan_Internal( SyncedMelee action, entity atta
 	if ( !IsAlive( target ) )
 		return false
 
+	if( !target.IsPlayer() )
+	{
+	if ( target.ContextAction_IsBusy() )
+	    return false
+	}
+
+	if( !attacker.IsPlayer() )
+	{
+	if ( attacker.ContextAction_IsBusy() )
+	    return false
+	}
+
 	target.GetTitanSoul().Signal( "OnSyncedMelee" )
 
 	// JFS: signals can kill things mid frame: R2DLC-311 SCRIPT ERROR: PHONE_HOME: [SERVER] Entity is null
@@ -439,6 +463,19 @@ bool function MeleeThread_TitanVsTitan_Internal( SyncedMelee action, entity atta
 
 	if ( !IsAlive( target ) )
 		return false
+
+	if( !target.IsPlayer() )
+	{
+	if ( target.ContextAction_IsBusy() )
+	    return false
+	}
+
+	if( !attacker.IsPlayer() )
+	{
+	if ( attacker.ContextAction_IsBusy() )
+	    return false
+	}
+
 	//attacker.Signal( "OnSyncedMelee" )
 	//target.Signal( "OnSyncedMelee" )
 
@@ -468,16 +505,15 @@ bool function MeleeThread_TitanVsTitan_Internal( SyncedMelee action, entity atta
 				// modified settings cleanup
 				if ( dataStruct.setAttackerNoTarget )
 					attacker.SetNoTarget( false )
-				if ( dataStruct.setAttackerContextActionBusy )
-				{
+
 					if ( attacker.ContextAction_IsBusy() )
 						attacker.ContextAction_ClearBusy()
-				}
-				if ( dataStruct.setTargetContextActionBusy )
-				{
+
+					if( IsValid( target ) )
+					{
 					if ( target.ContextAction_IsBusy() )
 						target.ContextAction_ClearBusy()
-				}
+					}
 				//
 
 				if( attacker.IsPlayer() ) // saved for npc executions
@@ -3020,6 +3056,7 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 	entity bossPlayer = target.GetBossPlayer()
 	if ( IsValid( bossPlayer ) ) //Executing an auto-Titan, when the pilot disconnects it destroys the auto-titan creating weird circumstances.
 		bossPlayer.EndSignal( "OnDestroy" )
+	if( target.IsPlayer() ) // Play Full Execution Animation With NPCS
 	target.EndSignal( "OnDestroy" )
 
 	if ( isAttackerRef )

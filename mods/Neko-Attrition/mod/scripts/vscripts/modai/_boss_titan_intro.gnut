@@ -303,6 +303,9 @@ void function MpBossTitan_PlayBossTitanIntro( entity titan, BossTitanIntroData o
 	HideCrit( titan )
 	titan.SetValidHealthBarTarget( false )
 	titan.SetInvulnerable()
+    entity soul = titan.GetTitanSoul()
+    if( IsValid( soul ) )
+    soul.SetShieldHealth( soul.GetShieldHealthMax() )
     // disable sensing
     titan.SetNoTarget( true )
 	titan.EnableNPCFlag( NPC_IGNORE_ALL )
@@ -383,7 +386,6 @@ void function MpBossTitan_PlayBossTitanIntro( entity titan, BossTitanIntroData o
 
 	entity ref = CreateScriptRef( refPos, refAngles )
 
-	entity soul = titan.GetTitanSoul()
 	if ( IsValid( soul.soul.bubbleShield ) )
 		soul.soul.bubbleShield.Destroy()
 
