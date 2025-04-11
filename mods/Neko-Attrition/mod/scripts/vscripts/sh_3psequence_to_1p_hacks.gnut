@@ -350,11 +350,9 @@ void function ServerCallback_HideHudForFPHackAnim()
 {
 	// these functions just set hud positions to infront of/behind the camera, manually set them up here so they'll be far enough away so we don't see them in these anims
 	// in an ideal world we wouldn't even have to turn off this rui stuff because it would be parented to our camera but unfortunately we do not live in an ideal world
-	#if !FIRST_PERSON_EXECUTION_HAS_NEW_HUD_REVAMP
 	int ruiDrawIsEnabled = GetConVarInt( "rui_drawEnable" )
     GetLocalClientPlayer().ClientCommand( "rui_drawEnable 0" )		
 	thread EnableHudOnViewRestored( ruiDrawIsEnabled )
-	#endif
 }
 
 void function EnableHudOnViewRestored( int ruiDrawIsEnabled = 0 )
