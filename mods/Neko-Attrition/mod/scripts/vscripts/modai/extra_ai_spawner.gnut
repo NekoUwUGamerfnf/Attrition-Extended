@@ -3142,7 +3142,9 @@ void function Ilovepansloadout( entity titan )
 {    TakeAllWeapons( titan )
      altNPCVanguard_SetUpTitan( titan )
 
-     titan.GiveOffhandWeapon( "mp_titanability_slow_trap", OFFHAND_ANTIRODEO )
+     //titan.GiveOffhandWeapon( "mp_titanability_slow_trap", OFFHAND_ANTIRODEO ) Doesn't Work
+
+	 titan.GiveOffhandWeapon( "mp_titanability_phase_dash", OFFHAND_ANTIRODEO ) // Lets Just Use This
 
      titan.GiveOffhandWeapon( "mp_titanweapon_flame_wall", OFFHAND_ORDNANCE )
 
@@ -3244,7 +3246,7 @@ void function nopilotNPCVanguard_SetUpTitan( entity titan, bool replacePilot = f
 	// welp, seems they already got this due to setups in CommonNPCTitanOnSpawned()
 	// don't know why it don't work
 	titan.kv.alwaysalert = 0
-	titan.DisableNPCMoveFlag( NPCMF_WALK_NONCOMBAT )
+	titan.EnableNPCMoveFlag( NPCMF_WALK_NONCOMBAT )
 
 	entity soul = titan.GetTitanSoul()
 	if ( IsValid( soul ) )
