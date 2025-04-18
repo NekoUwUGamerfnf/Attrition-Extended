@@ -4379,8 +4379,8 @@ void function BossLoadout_Lastimosa( entity titan )
 
 		// missing one kit, add bit core meter
 		// now changing to legion loadout
-		//TitanHealth_SetTitanCoreBuilderMultiplier( titan, 2.0 )
-		//ExtraSpawner_SetEmbarkedNPCTitanCoreMultiplier( titan, 2.0 )
+		TitanHealth_SetTitanCoreBuilderMultiplier( titan, 2.0 )
+		ExtraSpawner_SetEmbarkedNPCTitanCoreMultiplier( titan, 2.0 )
 titan.SetMaxHealth(12500)
 titan.SetHealth(12500)
 	}
