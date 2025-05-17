@@ -1,7 +1,7 @@
 {
 	"Name": "Neko's Attrition Extended Overhual",
 	"Description": "Put Auto Titans In Attrition And Give Them The Ability To Execute Other Titans And This Is What You Get",
-	"Version": "1.3.8",
+	"Version": "1.3.9",
 	"LoadPriority": 10, // Add TitanFrameWork compatibility, add higher load priority to overwrite
 
 	"Dependencies": {
@@ -13,6 +13,7 @@
 		"EXTRA_SPAWNER_HAS_ARCHON": "Moblin.Archon",
 		"EXTRA_SPAWNER_HAS_NEKOADMIN": "Neko's Admin Abuse",
 		"EXTRA_SPAWNER_HAS_KARMAADMIN": "Karma Mod Abuse",
+		"AIRBORNE_EXECUTIONS_THING": "Airborne Executions",
 		// Add HoloShift compatibility
 		// https://northstar.thunderstore.io/package/Legonzaur/HoloShift/
 		"EXTRA_SPAWNER_HAS_HOLOSHIFT": "Legonzaur.HoloShift"
@@ -26,6 +27,11 @@
 	],
 
 	"Scripts": [
+		// Airborne Executions
+		{
+			"Path": "karma_airborne_execution_attritionextended.nut",
+			"RunOn": "CLIENT || SERVER"
+		},
 		// nessie utility
 		{
 			"Path": "/nessieutil/enum_utility.gnut",
