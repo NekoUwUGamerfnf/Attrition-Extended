@@ -169,6 +169,7 @@ void function PIN_GameStart()
 	
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 	AddDeathCallback( "npc_titan", OnTitanKilled )
+	AddCallback_EntityChangedTeam( "player", OnPlayerChangedTeam )
 
 	RegisterSignal( "CleanUpEntitiesForRoundEnd" )
 	// new adding
@@ -2092,4 +2093,22 @@ void function SetTitanSelectionMenuDuration( float duration )
 void function GameState_SetScoreEventDialogueEnabled( bool enable )
 {
 	file.scoreEventDialogue = enable
+}
+
+/// This is to move all NPCs that a player owns from one team to the other during a match
+/// Auto-Titans, Turrets, Ticks and Hacked Spectres will all move along together with the player to the new Team
+/// Also possibly prevents mods that spawns other types of NPCs that players can own from breaking when switching (i.e Drones, Hacked Reapers)
+void function OnPlayerChangedTeam( entity player )
+{
+	if ( !player.hasConnected ) // Prevents players who just joined to trigger below code, as server always pre setups their teams
+		return
+	
+	NotifyClientsOfTeamChange( player, GetOtherTeam( player.GetTeam() ), player.GetTeam() )
+	
+	foreach( npc in GetNPCArray() )
+	{
+		entity bossPlayer = npc.GetBossPlayer()
+		if ( IsValidPlayer( bossPlayer ) && bossPlayer == player && IsAlive( npc ) )
+			SetTeam( npc, player.GetTeam() )
+	}
 }
