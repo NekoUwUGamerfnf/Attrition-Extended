@@ -843,7 +843,7 @@ void function ReplaceExecutionAttackerLoadout_Threaded( entity guy, string prima
 		// reworked version
 		array<entity> mainWeapons = guy.GetMainWeapons()
 		// if titan already got max 3 weapons we do nothing
-		bool shouldGivePrimary = mainWeapons.len() < 3 && GetTitanCharacterName( guy ) != "vanguard" || !guy.IsPlayer()
+		bool shouldGivePrimary = mainWeapons.len() != 3 && ((IsValid(guy.GetOffhandWeapon( OFFHAND_EQUIPMENT )) && guy.GetOffhandWeapon( OFFHAND_EQUIPMENT ).GetWeaponClassName() != "mp_titancore_upgrade") || guy.IsNPC())
 		// otherwise we store camo stuffs and apply to temp given weapon
 		int skinIndex = -1
 		int camoIndex = -1
