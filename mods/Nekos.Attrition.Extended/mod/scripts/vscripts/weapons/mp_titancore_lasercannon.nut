@@ -24,12 +24,6 @@ const LASER_FIRE_SOUND_1P = "Titan_Core_Laser_FireBeam_1P_extended"
 const LASER_FIRE_SOUND_1P = "Titan_Core_Laser_FireBeam_1P"
 #endif
 
-// modified struct for handling npc execution
-struct
-{
-	table<entity, bool> entUsingFakeLaserCore
-} file
-
 void function LaserCannon_Init()
 {
 	PrecacheParticleSystem( FX_LASERCANNON_AIM )
@@ -111,6 +105,14 @@ bool function OnAbilityCharge_LaserCannon( entity weapon )
 
 #if SERVER
 	entity player = weapon.GetWeaponOwner()
+	if ( InIonPrimeExecution( player ) )
+	{
+		if ( IsValid( weapon ) )
+		    weapon.kv.VisibilityFlags = ENTITY_VISIBLE_TO_NOBODY
+	    return true
+	}
+	else if ( IsValid( weapon ) )
+	    weapon.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
 	float chargeTime = weapon.GetWeaponSettingFloat( eWeaponVar.charge_time )
 	entity soul = player.GetTitanSoul()
 	if ( soul == null )
@@ -199,6 +201,14 @@ void function OnAbilityChargeEnd_LaserCannon( entity weapon )
 		weapon.w.laserWorldModel.Destroy()
 
 	entity player = weapon.GetWeaponOwner()
+	if ( InIonPrimeExecution( player ) )
+	{
+		if ( IsValid( weapon ) )
+		    weapon.kv.VisibilityFlags = ENTITY_VISIBLE_TO_NOBODY
+	    return
+	}
+	else if ( IsValid( weapon ) )
+	    weapon.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
 
 	if ( player == null )
 		return
@@ -206,37 +216,28 @@ void function OnAbilityChargeEnd_LaserCannon( entity weapon )
 	if ( player.IsPlayer() )
 		player.Server_TurnOffhandWeaponsDisabledOff()
 
-	// check for npc executions to work!
-	// don't want it intterupt execution animations
-	if ( !InIonPrimeExecution( player ) )
-	{
-		//PrintFunc()
-		//print( "IsTitanCoreFiring( player ): " + string( IsTitanCoreFiring( player ) ) )
-		//print( "player.Anim_IsActive(): " + string( player.Anim_IsActive() ) )
-		if ( player.IsNPC() && IsAlive( player ) && IsTitanCoreFiring( player )  )
-			player.Anim_Stop()
-	}
+	if ( player.IsNPC() && IsAlive( player ) && IsTitanCoreFiring( player )  )
+		player.Anim_Stop()
 	#endif
 }
 
 bool function OnAbilityStart_LaserCannon( entity weapon )
 {
-	// modded check
-	entity player = weapon.GetWeaponOwner()
-	// if owner npc is playing animation, we only run function if npc can use fake laser core
-#if SERVER
-	if ( player in file.entUsingFakeLaserCore && file.entUsingFakeLaserCore[player] )
-		return true
-#endif
-
-	// vanilla behavior
 	OnAbilityStart_TitanCore( weapon )
 
 #if SERVER
 	weapon.e.onlyDamageEntitiesOncePerTick = true
 
-	// moved up
-	//entity player = weapon.GetWeaponOwner()
+	entity player = weapon.GetWeaponOwner()
+	if ( InIonPrimeExecution( player ) )
+	{
+		SetCoreEffect( player, CreateCoreEffect, FX_LASERCANNON_CORE )
+		if ( IsValid( weapon ) )
+		    weapon.kv.VisibilityFlags = ENTITY_VISIBLE_TO_NOBODY
+	    return true
+	}
+	else if ( IsValid( weapon ) )
+	    weapon.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
 	float stunDuration = weapon.GetSustainedDischargeDuration()
 	float fadetime = 2.0
 	entity soul = player.GetTitanSoul()
@@ -266,21 +267,10 @@ bool function OnAbilityStart_LaserCannon( entity weapon )
 	
 	if ( player.IsNPC() )
 	{
-		// check for npc executions to work!
-		// don't want it intterupt execution animations
-		//PrintFunc()
-		//print( "player.ContextAction_IsMeleeExecution(): " + string( player.ContextAction_IsMeleeExecution() ) )
-		//print( "player.Anim_IsActive(): " + string( player.Anim_IsActive() ) )
-		//print( "IsValid( player.GetParent() ): " + string( IsValid( player.GetParent() ) ) )
-		// player.ContextAction_IsMeleeExecution() can't get a npc's state
-		// modded behavior
-		if ( !InIonPrimeExecution( player ) )
-		{
-			player.SetVelocity( <0,0,0> )
-			// modified checks for animations, anti-crash
-			if ( TitanShouldPlayAnimationForLaserCore( player ) )
-				player.Anim_ScriptedPlayActivityByName( "ACT_SPECIAL_ATTACK", true, 0.1 )
-		}
+		player.SetVelocity( <0,0,0> )
+		// modified checks for animations, anti-crash
+		if ( TitanShouldPlayAnimationForLaserCore( player ) )
+			player.Anim_ScriptedPlayActivityByName( "ACT_SPECIAL_ATTACK", true, 0.1 )
 	}
 
 	// thread LaserEndingWarningSound( weapon, player )
@@ -304,6 +294,14 @@ void function OnAbilityEnd_LaserCannon( entity weapon )
 	OnAbilityEnd_TitanCore( weapon )
 
 	entity player = weapon.GetWeaponOwner()
+	if ( InIonPrimeExecution( player ) )
+	{
+		if ( IsValid( weapon ) )
+		    weapon.kv.VisibilityFlags = ENTITY_VISIBLE_TO_NOBODY
+	    return
+	}
+	else if ( IsValid( weapon ) )
+	    weapon.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
 
 	if ( player == null )
 		return
@@ -321,25 +319,13 @@ void function OnAbilityEnd_LaserCannon( entity weapon )
 		EmitSoundOnEntity( player, "Titan_Core_Laser_FireStop_3P" )
 	}
 
-	// modified for handling npc laser core animation
-	if ( !InIonPrimeExecution( player ) )
+	if ( player.IsNPC() && IsAlive( player ) )
 	{
-		// vanilla check
-		if ( player.IsNPC() && IsAlive( player ) )
-		{
-			player.SetVelocity( <0,0,0> )
+		player.SetVelocity( <0,0,0> )
 
-			// modified checks for animations, anti-crash
-			if ( TitanShouldPlayAnimationForLaserCore( player ) )
-			{
-				player.Anim_ScriptedPlayActivityByName( "ACT_SPECIAL_ATTACK_END", true, 0.0 )
-				// vanilla missing: clean up context action state we set in OnAbilityCharge_LaserCannon()
-				// alright... shouldn't mark context action state for them, will make them stop finding new enemies
-				// just handle in extra_ai_spawner.gnut
-				//if ( player.ContextAction_IsBusy() )
-				//	thread ClearContextActionStateAfterCoreAnimation( player )
-			}
-		}
+		// modified checks for animations, anti-crash
+		if ( TitanShouldPlayAnimationForLaserCore( player ) )
+			player.Anim_ScriptedPlayActivityByName( "ACT_SPECIAL_ATTACK_END", true, 0.0 )
 	}
 
 	StopSoundOnEntity( player, "Titan_Core_Laser_FireBeam_3P" )
@@ -411,18 +397,6 @@ void function Laser_DamagedTargetInternal( entity target, var damageInfo )
 		DamageInfo_SetDamage( damageInfo, 0 )
 		return
 	}
-
-	// HACK fix here: if our npc is using fake laser core
-	// they still fire from their back for about 1 tick, which shouldn't deal any damage
-	if ( IsValid( attacker ) && attacker.IsNPC() )
-	{
-		if ( InIonPrimeExecution( attacker ) )
-		{
-			DamageInfo_SetDamage( damageInfo, 0 )
-			return
-		}
-	}
-	//
 
 	if ( IsValid( weapon ) )
 	{
