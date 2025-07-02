@@ -1,0 +1,20 @@
+WeaponData
+{
+	Mods
+	{
+		pas_ion_lasercannon
+		{
+		}
+		fd_laser_cannon
+		{
+		}
+		fd_balance
+		{
+		}
+
+		// pretty much a placeholder mod for fixing npc execution behavior!
+		npc_execution_laser_core
+		{
+		}
+	}
+}

@@ -36,7 +36,7 @@ struct
 void function GamemodeAITdm_Init()
 {
 	// modded gamemodes
-	if( GetCurrentPlaylistVarInt( "aitdm_extended_spawns", 0 ) != 0 )
+	if( GetCurrentPlaylistVarInt( "aitdm_extended_spawns", 1 ) != 0 )
 		Modded_Gamemode_AITdm_Extended_Init()
 	else // vanilla attrition
 	{

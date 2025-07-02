@@ -354,6 +354,9 @@ void function Execution_Ion_Prime( entity attacker )
 	// we've add fake laser core for npc execution, should be fine now
 	//if ( attacker.IsNPC() ) // saved for npc execution condition: never fire a lasercannon
 	//	coreWeapon = "mp_titancore_siege_mode" // change to placeholder core weapon if a npc ever used this execution
+	array<string> mods = []
+	if ( attacker.IsNPC() )
+	    mods.append("npc_execution_laser_core")
 
 	MeleeSyncedTitan_ReplaceExecutionAttackerLoadout( 
 		attacker, 
@@ -362,7 +365,7 @@ void function Execution_Ion_Prime( entity attacker )
 		"", [],		// "mp_titanability_laser_trip", won't use during execution
 		"mp_titanweapon_laser_lite", [],
 		"", [],		// "melee_titan_punch_ion", won't use during execution
-		coreWeapon, []
+		coreWeapon, mods
 	)
 }
 
@@ -370,7 +373,7 @@ const array<string> EXECUTION_ION_PRIME_REQUIRED_WEAPONS =
 [
 	"mp_titanweapon_laser_lite", 
 	"mp_titancore_laser_cannon",
-        "mp_titanweapon_flightcore_rockets", 
+    "mp_titanweapon_flightcore_rockets", 
 ]
 // flightcore rockets removes the titan weapon on the back moveing which looks weird
 bool function ExecutionIonPrime_ShouldReplaceLoadout( entity titan )
@@ -378,11 +381,7 @@ bool function ExecutionIonPrime_ShouldReplaceLoadout( entity titan )
 	// npc specific checks: we always replace loadout if they have "mp_titancore_laser_cannon"
 	// it will make npcs stuck forever when performing this execution
 	// player checks
-        if ( titan.IsNPC() )
-        {
-        return true
-        }
-	return Generic_TitanExecutionShouldReplaceLoadout( titan, EXECUTION_ION_REQUIRED_WEAPONS )
+	return Generic_TitanExecutionShouldReplaceLoadout( titan, EXECUTION_ION_PRIME_REQUIRED_WEAPONS )
 }
 
 void function Execution_Tone( entity attacker )
