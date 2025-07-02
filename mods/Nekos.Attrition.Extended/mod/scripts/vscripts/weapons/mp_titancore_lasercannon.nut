@@ -148,7 +148,7 @@ bool function OnAbilityCharge_LaserCannon( entity weapon )
 	//PrintFunc()
 	//print( "player.Anim_IsActive(): " + string( player.Anim_IsActive() ) )
 	//if ( player.IsNPC() )
-	if ( player.IsNPC() && IsValid( weapon ) && !weapon.HasMod( "npc_execution_laser_core" ) )
+	if ( player.IsNPC() )
 	{
 		player.SetVelocity( <0,0,0> )
 		
@@ -208,7 +208,7 @@ void function OnAbilityChargeEnd_LaserCannon( entity weapon )
 
 	// check for npc executions to work!
 	// don't want it intterupt execution animations
-	if ( player.IsNPC() && IsValid( weapon ) && !weapon.HasMod( "npc_execution_laser_core" ) )
+	if ( !InIonPrimeExecution( player ) )
 	{
 		//PrintFunc()
 		//print( "IsTitanCoreFiring( player ): " + string( IsTitanCoreFiring( player ) ) )
@@ -274,12 +274,7 @@ bool function OnAbilityStart_LaserCannon( entity weapon )
 		//print( "IsValid( player.GetParent() ): " + string( IsValid( player.GetParent() ) ) )
 		// player.ContextAction_IsMeleeExecution() can't get a npc's state
 		// modded behavior
-		if ( IsValid( weapon ) && weapon.HasMod( "npc_execution_laser_core" ) )
-		{
-			// they can't aim laser core if use during execution, do some fake effect
-			thread FakeExecutionLaserCannonThink( player, weapon )
-		}
-		else // vanilla behavior
+		if ( !InIonPrimeExecution( player ) )
 		{
 			player.SetVelocity( <0,0,0> )
 			// modified checks for animations, anti-crash
@@ -299,196 +294,6 @@ bool function OnAbilityStart_LaserCannon( entity weapon )
 
 	return true
 }
-
-// modified: fake lasercore think
-// npcs can't aim laser core if use during execution, do some fake effect
-#if SERVER
-void function FakeExecutionLaserCannonThink( entity owner, entity weapon )
-{
-	if ( owner in file.entUsingFakeLaserCore && file.entUsingFakeLaserCore[ owner ] )
-	    return
-	owner.EndSignal( "OnDeath" )
-	owner.EndSignal( "OnDestroy" )
-	owner.EndSignal( "OnSustainedDischargeEnd" )
-	weapon.EndSignal( "OnDestroy" )
-
-	// adding this mark so we don't stop animation and sound in OnAbilityEnd_LaserCannon()
-	// all handle in this function
-	file.entUsingFakeLaserCore[ owner ] <- true
-
-	// scripted entity handle
-	array<entity> laserCoreScriptedEffects
-	array<entity> laserCoreScriptedEntities
-
-	// tracer don't really work, but with impact effect it already looks not bad
-	//entity laserSource //CreatePropDynamic( LASER_MODEL )
-	//laserSource.SetParent( owner, "CHESTFOCUS", true, 0.0 )
-	//laserSource.SetAngles( < 0, 180, 0 > )
-	//laserCoreScriptedEntities.append( laserSource )
-
-	//entity laserTracer //= PlayFXOnEntity( $"P_wpn_lasercannon", laserSource, "muzzle_flash", null, null, 6 )
-	//laserCoreScriptedEffects.append( laserTracer )
-
-	// fake impact sound
-	entity laserImpactSoundEnt = CreatePropScript( $"models/dev/empty_model.mdl" )
-	laserImpactSoundEnt.NotSolid()
-	laserImpactSoundEnt.kv.fadedist = 10000 // try not to fade
-	laserImpactSoundEnt.DisableHibernation()
-	laserCoreScriptedEntities.append( laserImpactSoundEnt )
-
-	table<string, entity> entCleanUpTable
-	// all reworked
-	//entCleanUpTable[ "executionParent" ] <- null
-	//entCleanUpTable[ "laserGlowEffect" ] <- null
-
-	OnThreadEnd
-	(
-		function(): ( owner, entCleanUpTable, laserCoreScriptedEffects, laserCoreScriptedEntities )
-		{
-			//print( "FakeExecutionLaserCannonThink() OnThreadEnd!" )
-			// now handled by laserCoreScriptedEffects
-			/*
-			entity laserGlowEffect = entCleanUpTable[ "laserGlowEffect" ]
-			if ( IsValid( laserGlowEffect ) )
-				EffectStop( laserGlowEffect )
-			*/
-
-			if ( IsValid( owner ) )
-			{
-				// fix sound
-				EmitSoundOnEntity( owner, "Titan_Core_Laser_FireStop_3P" )
-				StopSoundOnEntity( owner, "Titan_Core_Laser_FireBeam_3P" )
-				delete file.entUsingFakeLaserCore[ owner ]
-			}
-			// now handled by laserImpactSoundEnt
-			/*
-			entity executionParent = entCleanUpTable[ "executionParent" ]
-			if ( IsValid( executionParent ) )
-			{
-				StopSoundOnEntity( executionParent, "Default.LaserLoop.BulletImpact_3P_VS_3P" )
-			}
-			*/
-
-			foreach ( entity fx in laserCoreScriptedEffects )
-			{
-				if ( IsValid( fx ) )
-				{
-					EffectStop( fx )
-					fx.Destroy()
-				}
-			}
-
-			foreach ( entity ent in laserCoreScriptedEntities )
-			{
-				if ( IsValid( ent ) )
-					ent.Destroy()
-			}
-		}
-	)
-
-	float lifeTime = weapon.GetSustainedDischargeDuration()
-	float endTime = Time() + lifeTime
-	bool emittedSound = false
-	entity laserGlowEffect
-	while ( Time() < endTime && owner.Anim_IsActive() )
-	{
-		// stop weapon firing
-		ForceTitanSustainedDischargeEnd( owner )
-
-		// fake impact sound event, play on target
-		// updated: play on laserImpactSoundEnt that moves with laser trace
-		/*
-		entity executionParent = owner.GetParent()
-		if ( IsValid( executionParent ) )
-		{
-			if ( !emittedSound )
-			{
-				EmitSoundOnEntity( executionParent, "Default.LaserLoop.BulletImpact_3P_VS_3P" )
-				entCleanUpTable[ "executionParent" ] = executionParent
-				emittedSound = true
-			}
-		}
-		*/
-
-		int index = owner.LookupAttachment( "CHESTFOCUS" )
-		vector origin = owner.GetAttachmentOrigin( index )
-		vector angles = owner.GetAttachmentAngles( index )
-
-		array<entity> ignoreEnts = [ owner ]
-		ignoreEnts.extend( laserCoreScriptedEntities )
-		ArrayRemoveInvalid( ignoreEnts )
-
-		TraceResults results = TraceLine( 
-			owner.EyePosition(), 
-			owner.EyePosition() + AnglesToForward( angles ) * 6000, // equal to "sustained_laser_range"
-			ignoreEnts, 
-			TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_NONE 
-		)
-
-		// fake impact effect
-		// "laser_core" impact effect isn't good, it will emit a looping impact sound...
-		entity hitEnt = results.hitEnt
-		if ( IsValid( hitEnt ) && !results.hitSky )
-		{
-			// move impact sound ent
-			laserImpactSoundEnt.SetOrigin( results.endPos )
-			if ( !emittedSound )
-			{
-				EmitSoundOnEntity( laserImpactSoundEnt, "Default.LaserLoop.BulletImpact_3P_VS_3P" )
-				emittedSound = true
-			}
-
-			vector fxPos = results.endPos// - results.surfaceNormal // no need to minus normal since we're not using impactFXTable
-			//PlayImpactFXTable( , owner, "laser_core", SF_ENVEXPLOSION_INCLUDE_ENTITIES )
-			// manually do effects
-			PlayFX( $"P_impact_lasercannon_default", fxPos )
-			// effects that only played when we hit target
-			// reverted. always do effect because I can't code fake sustained laser radius check
-			// and there's no need we play a new effect each time
-			/*
-			if ( IsValid( executionParent ) && hitEnt == executionParent )
-			{
-				if ( IsValid( laserGlowEffect ) )
-				{
-					EffectStop( laserGlowEffect )
-					laserGlowEffect = null
-				}
-				laserGlowEffect = PlayFX( $"P_lasercannon_endglow", fxPos )
-				//entCleanUpTable[ "laserGlowEffect" ] = laserGlowEffect
-				ArrayRemoveInvalid( laserCoreScriptedEffects )
-				laserCoreScriptedEffects.append( laserGlowEffect )
-			}
-			*/
-			if ( !IsValid( laserGlowEffect ) )
-			{
-				laserGlowEffect = PlayFX( $"P_lasercannon_endglow", fxPos )
-				laserGlowEffect.SetStopType( "DestroyImmediately" )
-			}
-			laserGlowEffect.SetOrigin( fxPos )
-			ArrayRemoveInvalid( laserCoreScriptedEffects )
-			laserCoreScriptedEffects.append( laserGlowEffect )
-		}
-		else // can't hit anything or hit sky
-		{
-			// stop impact sound and effect
-			if ( emittedSound )
-			{
-				StopSoundOnEntity( laserImpactSoundEnt, "Default.LaserLoop.BulletImpact_3P_VS_3P" )
-				laserImpactSoundEnt.Destroy()
-				emittedSound = false
-			}
-			if ( IsValid( laserGlowEffect ) )
-			{
-				EffectStop( laserGlowEffect )
-				laserGlowEffect.Destroy()
-				laserGlowEffect = null
-			}
-		}
-
-		WaitFrame()
-	}
-}
-#endif
 
 void function OnAbilityEnd_LaserCannon( entity weapon )
 {
@@ -513,13 +318,11 @@ void function OnAbilityEnd_LaserCannon( entity weapon )
 	}
 	else
 	{
-		// modified for handling npc laser core animation
-		if ( IsValid( weapon ) && !weapon.HasMod( "npc_execution_laser_core" ) )
-			EmitSoundOnEntity( player, "Titan_Core_Laser_FireStop_3P" )
+		EmitSoundOnEntity( player, "Titan_Core_Laser_FireStop_3P" )
 	}
 
 	// modified for handling npc laser core animation
-	if ( player.IsNPC() && IsValid( weapon ) && !weapon.HasMod( "npc_execution_laser_core" ) )
+	if ( !InIonPrimeExecution( player ) )
 	{
 		// vanilla check
 		if ( player.IsNPC() && IsAlive( player ) )
@@ -539,12 +342,8 @@ void function OnAbilityEnd_LaserCannon( entity weapon )
 		}
 	}
 
-	// modified for handling npc laser core animation
-	if ( player.IsNPC() && IsValid( weapon ) && !weapon.HasMod( "npc_execution_laser_core" ) )
-	{
-		StopSoundOnEntity( player, "Titan_Core_Laser_FireBeam_3P" )
-		StopSoundOnEntity( player, LASER_FIRE_SOUND_1P )
-	}
+	StopSoundOnEntity( player, "Titan_Core_Laser_FireBeam_3P" )
+	StopSoundOnEntity( player, LASER_FIRE_SOUND_1P )
 
 	//print( "OnAbilityEnd_LaserCannon run to end!" )
 	#endif
@@ -617,7 +416,7 @@ void function Laser_DamagedTargetInternal( entity target, var damageInfo )
 	// they still fire from their back for about 1 tick, which shouldn't deal any damage
 	if ( IsValid( attacker ) && attacker.IsNPC() )
 	{
-		if ( IsValid( weapon ) && weapon.HasMod( "npc_execution_laser_core" ) )
+		if ( InIonPrimeExecution( attacker ) )
 		{
 			DamageInfo_SetDamage( damageInfo, 0 )
 			return

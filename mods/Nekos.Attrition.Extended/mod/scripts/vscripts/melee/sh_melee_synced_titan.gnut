@@ -33,6 +33,8 @@ global function MeleeSyncedTitan_AddModToRemoveOnLoadoutReplace
 // for we refresh hud visibility after player's certain weapon getting replaced
 global function MeleeSyncedTitan_AddWeaponRequiresHudVisibilityUpdate
 
+global function InIonPrimeExecution
+
 struct ExecutionSavedLoadout
 {
 	// can't just store a primary weapon entity, as TakeWeapon_NoDelete() will leave a weapon model in titan's hand
@@ -100,6 +102,7 @@ struct
 	table< string, array<string> > titanCharacterSpecificExecutionRefs
 
 	array<string> weaponsRequireHudVisibilityUpdate
+	table<entity, bool> inionprimeexecution
 } file
 #endif
 
@@ -350,14 +353,6 @@ bool function ExecutionIon_ShouldReplaceLoadout( entity titan )
 
 void function Execution_Ion_Prime( entity attacker )
 {
-	string coreWeapon = "mp_titancore_laser_cannon"
-	// we've add fake laser core for npc execution, should be fine now
-	//if ( attacker.IsNPC() ) // saved for npc execution condition: never fire a lasercannon
-	//	coreWeapon = "mp_titancore_siege_mode" // change to placeholder core weapon if a npc ever used this execution
-	array<string> mods = []
-	if ( attacker.IsNPC() )
-	    mods.append("npc_execution_laser_core")
-
 	MeleeSyncedTitan_ReplaceExecutionAttackerLoadout( 
 		attacker, 
 		"mp_titanweapon_flightcore_rockets", [], // won't use during execution but change because it looks better
@@ -365,7 +360,7 @@ void function Execution_Ion_Prime( entity attacker )
 		"", [],		// "mp_titanability_laser_trip", won't use during execution
 		"mp_titanweapon_laser_lite", [],
 		"", [],		// "melee_titan_punch_ion", won't use during execution
-		coreWeapon, mods
+		"mp_titancore_laser_cannon", []
 	)
 }
 
@@ -794,6 +789,9 @@ void function ReplaceExecutionAttackerLoadout_Threaded( entity guy, string prima
 	guy.Signal( "ReplaceExecutionAttackerLoadout" )
 	guy.EndSignal( "ReplaceExecutionAttackerLoadout" )
 
+    if ( equipment == "mp_titancore_laser_cannon" && guy.IsNPC() )
+        file.inionprimeexecution[ guy ] <- true
+
 	// player loadout saving
 	if ( guy.IsPlayer() )
 	{
@@ -1130,6 +1128,8 @@ void function ReplaceExecutionAttackerLoadout_Threaded( entity guy, string prima
 		{
 			if ( IsValid( guy ) )
 			{
+				if ( guy in file.inionprimeexecution )
+				    delete file.inionprimeexecution[ guy ]
 				// player loadout restoring
 				if ( guy.IsPlayer() )
 				{
@@ -1432,5 +1432,12 @@ void function MeleeSyncedTitan_RegisterTitanCharacterSpecificExecutionRef( strin
 		file.titanCharacterSpecificExecutionRefs[ characterName ] <- []
 	if ( !file.titanCharacterSpecificExecutionRefs[ characterName ].contains( executionRef ) )
 		file.titanCharacterSpecificExecutionRefs[ characterName ].append( executionRef )
+}
+
+bool function InIonPrimeExecution( entity npc )
+{
+	if ( !(npc in file.inionprimeexecution) )
+	    return false
+	return file.inionprimeexecution[npc]
 }
 #endif
