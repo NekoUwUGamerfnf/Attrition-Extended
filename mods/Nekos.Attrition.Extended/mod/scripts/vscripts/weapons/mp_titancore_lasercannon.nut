@@ -392,7 +392,7 @@ void function Laser_DamagedTargetInternal( entity target, var damageInfo )
 	entity weapon = DamageInfo_GetWeapon( damageInfo )
 	entity attacker = DamageInfo_GetAttacker( damageInfo )
 
-	if ( attacker == target )
+	if ( attacker == target || InIonPrimeExecution( attacker ) )
 	{
 		DamageInfo_SetDamage( damageInfo, 0 )
 		return
