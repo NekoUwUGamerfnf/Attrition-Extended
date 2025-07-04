@@ -2,8 +2,6 @@
 
 [Discord Server](https://discord.gg/9wcEdgRyrs)
 
-Put `aitdm_extended_spawns 1` In Playlistvars To Enable Extended NPC Spawns
-
 Convars
 
 `extra_spawn_admin` Put Players Uid To Use Admin Commands Putting A Players Uid In This Overrides Karma Mod Abuse Checks If The Server Is Using Karma Mod Abuse This Doesn't Need To Be Changed
