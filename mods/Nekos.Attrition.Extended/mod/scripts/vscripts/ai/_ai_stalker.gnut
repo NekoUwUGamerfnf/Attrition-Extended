@@ -864,7 +864,7 @@ void function StalkerGearOverloads( entity npc, entity attacker = null )
 			if ( IsAlive( npc ) && IsValid( npc ) )
 			{
 				entity damageAttacker
-				if ( IsValid( attacker ) )
+				if ( IsValid( attacker ) && (attacker.IsPlayer() || attacker.IsNPC()) )
 					damageAttacker = attacker
 				else
 					damageAttacker = npc
