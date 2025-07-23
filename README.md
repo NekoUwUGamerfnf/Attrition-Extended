@@ -1,6 +1,6 @@
 # Attrition Extended
 
-[Discord Server](https://discord.gg/9wcEdgRyrs)
+[Discord Server](https://ds.nekouwugamerfnf.dev)
 
 Convars
 
