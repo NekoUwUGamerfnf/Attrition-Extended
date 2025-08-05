@@ -1,5 +1,7 @@
 # Attrition Extended
 
+Moved To https://github.com/NekoUwUGamerfnf/Attrition-Extended-Recode
+
 [Discord Server](https://ds.nekouwugamerfnf.dev)
 
 Convars
